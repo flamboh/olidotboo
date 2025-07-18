@@ -110,7 +110,7 @@
 	</section>
 
 	<!-- Projects Section -->
-	<section class="flex min-h-screen items-center justify-center bg-gray-900 px-6 py-16">
+	<section class="flex min-h-screen items-center justify-center px-6 py-16">
 		<div class="mx-auto max-w-6xl">
 			<h2 class="mb-16 text-center text-4xl font-bold text-white md:text-6xl">My Stuff</h2>
 			<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
