@@ -11,3 +11,7 @@
 	--color-silver: #d4d4dc;
 	--color-moss: #2e503c;
 }
+
+html, body {
+	overflow-x: hidden;
+}
