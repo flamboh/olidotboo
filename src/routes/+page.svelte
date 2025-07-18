@@ -8,11 +8,46 @@
 	import Cpp from '~icons/simple-icons/cplusplus';
 	import TailwindCSS from '~icons/simple-icons/tailwindcss';
 	let scrollY = 0;
+	let bottomReached = false;
+	let bottomOCount = 0;
+
+	$: {
+		if (typeof window !== 'undefined') {
+			const isAtBottom = scrollY + window.innerHeight >= document.body.scrollHeight - 100;
+			if (isAtBottom && !bottomReached) {
+				bottomReached = true;
+				startBottomAnimation();
+			}
+		}
+	}
+
+	function startBottomAnimation() {
+		setTimeout(() => {
+			const interval = setInterval(() => {
+				bottomOCount += 1;
+				if (bottomOCount >= 100) {
+					clearInterval(interval);
+				}
+			}, 100); // Add one "o" every 100ms
+		}, 5000); // Wait 5 seconds before starting
+	}
 </script>
 
 <svelte:window bind:scrollY />
 
-<main class="min-h-screen overflow-x-hidden bg-gray-950">
+<!-- Animated Background -->
+<div class="waveform-background"></div>
+<div class="waveform-bars">
+	{#each Array(100) as _, i}
+		{@const targetHeight = Math.random() * 80 + 20}
+		<div
+			class="waveform-bar"
+			style="animation-delay: {i * 0.01}s; --target-height: {targetHeight}%;"
+		></div>
+	{/each}
+</div>
+
+<main class="relative min-h-screen overflow-x-hidden">
 	<!-- Hero Section -->
 	<section class="flex min-h-screen items-center justify-center overflow-hidden px-6">
 		<div class="text-center">
@@ -41,23 +76,6 @@
 					<span class="text-gray-500">🎧</span>
 				</div>
 			</h1>
-
-			<!-- Second line of o's from the left -->
-			<span
-				class="absolute bottom-8 left-0 inline-block text-2xl font-medium whitespace-nowrap text-gray-500 transition-all duration-300 ease-out md:text-4xl"
-				>{'o'.repeat(
-					Math.max(
-						0,
-						Math.floor(
-							((scrollY - 220) /
-								(typeof document !== 'undefined'
-									? document.body.scrollHeight - window.innerHeight
-									: 1000)) *
-								150
-						)
-					)
-				)}</span
-			>
 		</div>
 	</section>
 
@@ -163,4 +181,13 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- Bottom line of o's animation -->
+	{#if bottomReached}
+		<div class="w-full pr-6 pb-32 pl-0 text-left">
+			<span class="font-mono text-2xl font-medium text-gray-500 md:text-4xl">
+				{'o'.repeat(bottomOCount)}
+			</span>
+		</div>
+	{/if}
 </main>
