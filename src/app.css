@@ -34,7 +34,7 @@ body {
 	left: 0;
 	width: 100%;
 	height: 5vh;
-	z-index: -1;
+	z-index: 100;
 	display: flex;
 	align-items: flex-end;
 	justify-content: space-around;
@@ -134,4 +134,18 @@ body {
 	100% {
 		height: var(--target-height);
 	}
+}
+
+@keyframes gradientMove {
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		background-position: 200% 50%;
+	}
+}
+
+.tuned-in-gradient {
+	background-size: 200% 200%;
+	animation: gradientMove 2s ease-in-out infinite;
 }
