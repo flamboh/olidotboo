@@ -255,7 +255,7 @@
 							rel="noopener noreferrer"
 							class="underline transition-colors hover:text-gray-200"
 						>
-							Netflow Analysis
+							NetFlow Analysis
 						</a>
 					</h3>
 					<p class="text-lg leading-relaxed text-gray-300">
