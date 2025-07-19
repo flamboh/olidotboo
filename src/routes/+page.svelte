@@ -1,5 +1,5 @@
 <script>
-	import profile from '$lib/assets/profile.jpg';
+	import { error } from '@sveltejs/kit';
 	import Svelte from '~icons/simple-icons/svelte';
 	import TypeScript from '~icons/simple-icons/typescript';
 	import React from '~icons/simple-icons/react';
@@ -129,7 +129,7 @@
 			<div class="mb-16 flex items-center gap-12">
 				<div class="flex-shrink-0">
 					<img
-						src={profile}
+						src="/profile.JPG"
 						alt="Oliver Boorstein"
 						class="h-80 w-64 scale-125 rounded-2xl border-4 border-gray-800 object-cover object-top shadow-xl"
 					/>
