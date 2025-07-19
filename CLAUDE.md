@@ -9,21 +9,25 @@ This is a personal dev portfolio built with SvelteKit 2.22.0 and Svelte 5.0, usi
 ## Development Commands
 
 **Start development server:**
+
 ```bash
 npm run dev
 ```
 
 **Build for production:**
+
 ```bash
 npm run build
 ```
 
 **Preview production build:**
+
 ```bash
 npm run preview
 ```
 
 **Type checking:**
+
 ```bash
 npm run check
 # or in watch mode
@@ -31,12 +35,14 @@ npm run check:watch
 ```
 
 **Code formatting and linting:**
+
 ```bash
 npm run format  # Format with Prettier
 npm run lint    # Lint with ESLint and Prettier
 ```
 
 **Sync SvelteKit types:**
+
 ```bash
 npm run prepare
 ```
@@ -44,6 +50,7 @@ npm run prepare
 ## Architecture
 
 **SvelteKit Structure:**
+
 - File-based routing in `src/routes/`
 - Root layout: `src/routes/+layout.svelte`
 - Pages: `src/routes/+page.svelte`
@@ -57,16 +64,15 @@ This project uses Svelte 5 with the new runes syntax. Use `$props()`, `$state()`
 ## Styling System
 
 **Custom Color Theme:**
+
 ```css
---color-keppel: #44b097    /* Primary teal */
---color-mint: #aff5bf      /* Light green accent */
---color-jungle: #0a1d20    /* Dark background */
---color-clover: #549454    /* Medium green */
---color-silver: #d4d4dc    /* Light gray */
---color-moss: #2e503c      /* Dark green */
+--color-keppel: #44b097 /* Primary teal */ --color-mint: #aff5bf /* Light green accent */
+	--color-jungle: #0a1d20 /* Dark background */ --color-clover: #549454 /* Medium green */
+	--color-silver: #d4d4dc /* Light gray */ --color-moss: #2e503c /* Dark green */;
 ```
 
 **Tailwind CSS 4.0:**
+
 - Configured via Vite plugin
 - Custom colors available as Tailwind utilities
 - Rubik font family set globally

@@ -11,12 +11,16 @@
 	import Github from '~icons/simple-icons/github';
 
 	import { fade } from 'svelte/transition';
-	let scrollY = 0;
-	let bottomReached = false;
-	let bottomOCount = 0;
-	let showCopiedMessage = false;
 
-	$: {
+	let scrollY = $state(0);
+	let bottomReached = $state(false);
+	let bottomOCount = $state(0);
+	let showCopiedMessage = $state(false);
+	let innerWidth = $state(0);
+
+	let waveformCount = $derived(innerWidth >= 1800 ? 350 : innerWidth >= 1024 ? 200 : 100);
+
+	$effect(() => {
 		if (typeof window !== 'undefined') {
 			const isAtBottom = scrollY + window.innerHeight >= document.body.scrollHeight - 100;
 			if (isAtBottom && !bottomReached) {
@@ -24,7 +28,7 @@
 				startBottomAnimation();
 			}
 		}
-	}
+	});
 
 	function startBottomAnimation() {
 		setTimeout(() => {
@@ -53,20 +57,29 @@
 	}
 </script>
 
-<svelte:window bind:scrollY />
+<svelte:window bind:scrollY bind:innerWidth />
 
 <!-- Animated Background -->
 <div class="waveform-background"></div>
 <div class="waveform-bars">
-	{#each Array(100) as _, i}
-		{@const group = i % 8}
-		{@const baseHeight = 15 + group * 15}
-		{@const variation = (Math.sin(i * 0.4) + 1) * 10}
-		{@const targetHeight = Math.max(10, baseHeight + variation)}
-		{@const animationDelay = group * 0.3 + i * 0.003}
+	{#each Array(waveformCount) as _, i}
+		{@const barsPerBand = Math.max(10, Math.floor(waveformCount / 20))}
+		{@const frequencyBand = Math.floor(i / barsPerBand)}
+		{@const positionInBand = i % barsPerBand}
+		{@const bandCenter = Math.floor(barsPerBand / 2)}
+		{@const distanceFromCenter = Math.abs(positionInBand - bandCenter)}
+		{@const bandFalloff = Math.exp(-distanceFromCenter * 0.15)}
+		{@const bassBoost = frequencyBand < 4 ? 1.5 : 1}
+		{@const midBoost = frequencyBand >= 4 && frequencyBand < 12 ? 1.3 : 1}
+		{@const trebleBoost = frequencyBand >= 12 ? 0.8 : 1}
+		{@const baseHeight =
+			(20 + frequencyBand * 8) * bandFalloff * bassBoost * midBoost * trebleBoost}
+		{@const rhythmVariation = Math.sin(i * 0.2 + frequencyBand) * 15}
+		{@const targetHeight = Math.max(8, Math.min(95, baseHeight + rhythmVariation))}
+		{@const groupDelay = frequencyBand * 0.1 + positionInBand * 0.02}
 		<div
 			class="waveform-bar"
-			style="animation-delay: {animationDelay}s; --target-height: {targetHeight}%;"
+			style="animation-delay: {groupDelay}s; --target-height: {targetHeight}%;"
 		></div>
 	{/each}
 </div>
@@ -126,7 +139,7 @@
 	<!-- About Section -->
 	<section class="flex min-h-screen items-center justify-center px-6 py-16">
 		<div class="mx-auto max-w-6xl text-center">
-			<div class="mb-16 flex items-center gap-12">
+			<div class="mb-16 flex flex-col items-center gap-12 md:flex-row">
 				<div class="flex-shrink-0">
 					<img
 						src="/profile.JPG"
@@ -152,7 +165,7 @@
 							📄 View Resume
 						</a>
 						<button
-							on:click={copyEmailToClipboard}
+							onclick={copyEmailToClipboard}
 							class="inline-flex items-center rounded-lg bg-white px-6 py-3 font-medium shadow-lg transition-colors duration-200 hover:cursor-pointer hover:bg-gray-200 hover:shadow-xl"
 						>
 							📧 Contact Me
