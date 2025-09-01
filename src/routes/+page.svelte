@@ -187,7 +187,7 @@
 
 			<!-- Skills Section -->
 			<div class="mt-32 text-center">
-				<h2 class="mb-8 text-2xl font-bold text-white md:text-4xl">Skills</h2>
+				<h2 class="mb-8 text-2xl font-bold text-white md:text-4xl">My Skills</h2>
 				<div
 					class="flex flex-row flex-wrap items-center justify-center gap-8 text-lg font-medium text-gray-300 md:text-xl"
 				>
