@@ -5,8 +5,8 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="font-sans min-h-screen md:items-center md:justify-center bg-background md:grid md:grid-cols-2 md:mx-[10vw] mx-[5vw] md:space-x-[10vw] overflow-hidden flex flex-col items-center justify-center md:gap-y-0 gap-y-4">
-      <div className="col-span-1 flex flex-col">
+    <div className="font-sans min-h-screen lg:items-center lg:justify-center bg-background lg:grid lg:grid-cols-2 lg:mx-[15vw] mx-[5vw] lg:space-x-[10vw] overflow-hidden flex flex-col items-center justify-center lg:gap-y-0 gap-y-4">
+      <div className="col-span-1 flex flex-col md:items-start items-center">
         <div className="flex flex-col rounded-md py-4 w-full">
           <h1 className="text-2xl font-bold text-foreground flex items-baseline gap-2">
             {"hii, i'm oliver"}
@@ -82,7 +82,7 @@ export default function Home() {
           </Button>
         </div>
       </div>
-      <div className="col-span-1 flex flex-col gap-y-4 items-center">
+      <div className="col-span-1 flex flex-col gap-y-4 items-end">
         <Card className="w-[min(90vw,24rem)] gap-y-2">
           <CardHeader>
             <CardTitle>networks research</CardTitle>
