@@ -91,7 +91,7 @@ export default function Home() {
             <p className="text-pretty text-primary">
               building internal tools with svelte, typescript, and python to
               analyze university-scale network traffic. supported by a
-              prestigious nsf stipend.
+              prestigious nsf-reu stipend.
             </p>
           </CardContent>
         </Card>
@@ -111,8 +111,8 @@ export default function Home() {
           <CardContent>
             <p className="text-pretty text-primary">
               music publication website for album listening club. built as a
-              team of 4 developers using react. the publication hosts articles,
-              reviews, and interviews all created by club members.
+              team of 4 developers using react. articles, reviews, and
+              interviews all created by club members.
             </p>
           </CardContent>
         </Card>
