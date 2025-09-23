@@ -11,7 +11,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-foreground">
             {"Hii, I'm Oliver"}
           </h1>
-          <h2 className="text-lg text-accent-foreground">
+          <h2 className="text-lg text-accent-foreground text-pretty">
             {"Researcher and Junior Computer Science Student"}
             <br />
             {"@ University of Oregon"}
@@ -65,11 +65,39 @@ export default function Home() {
           </Button>
         </div>
       </div>
-      <div className="col-span-1">
-        <Card>
+      <div className="col-span-1 flex flex-col gap-4 items-center">
+        <Card className="w-[80%]">
           <CardHeader>
-            <CardTitle>Card Title</CardTitle>
+            <CardTitle>Lorem Ipsum</CardTitle>
           </CardHeader>
+          <CardContent>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="w-[80%]">
+          <CardHeader>
+            <CardTitle>Lorem Ipsum</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="w-[80%]">
+          <CardHeader>
+            <CardTitle>Lorem Ipsum</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </CardContent>
         </Card>
       </div>
     </div>
