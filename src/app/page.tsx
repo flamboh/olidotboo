@@ -6,20 +6,20 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div className="font-sans min-h-screen lg:items-center lg:justify-center bg-background lg:grid lg:grid-cols-2 lg:mx-[15vw] mx-[5vw] lg:space-x-[10vw] overflow-hidden flex flex-col items-center justify-center lg:gap-y-0 gap-y-4">
-      <div className="col-span-1 flex flex-col md:items-start items-center">
-        <div className="flex flex-col rounded-md py-4 w-full">
+      <div className="col-span-1 flex flex-col lg:items-start items-center">
+        <div className="flex flex-col rounded-md py-4 w-full lg:items-start items-center">
           <h1 className="text-2xl font-bold text-foreground flex items-baseline gap-2">
             {"hii, i'm oliver"}
             <span className="text-muted text-pretty text-sm">he/they</span>
           </h1>
 
-          <h2 className="text-lg text-accent-foreground text-pretty">
-            {"researcher and computer science 3rd year"}
+          <h2 className="text-lg text-accent-foreground text-balance text-center lg:text-left">
+            {"researcher, music lover, and computer science 3rd year"}
             <br />
             {"@ uoregon"}
           </h2>
         </div>
-        <div className="flex items-center gap-4 md:justify-start justify-center">
+        <div className="flex items-center gap-4 lg:justify-start justify-center">
           <Button variant="ghost" className="p-2 m-0 border size-12" asChild>
             <Link
               href="https://github.com/flamboh"
@@ -85,7 +85,16 @@ export default function Home() {
       <div className="col-span-1 flex flex-col gap-y-4 items-end">
         <Card className="w-[min(90vw,24rem)] gap-y-2">
           <CardHeader>
-            <CardTitle>networks research</CardTitle>
+            <CardTitle>
+              <Link
+                href="https://github.com/flamboh/netflow-analysis"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                networks research
+              </Link>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-pretty text-primary">
