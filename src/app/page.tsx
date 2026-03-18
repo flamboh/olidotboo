@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
+import { CopyEmailButton } from "@/components/copy-email-button";
 
 export default function Home() {
   return (
@@ -35,21 +36,7 @@ export default function Home() {
               />
             </Link>
           </Button>
-          <Button variant="ghost" className="p-2 m-0 border size-12" asChild>
-            <Link
-              href="mailto:hi@oli.boo"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                src="/mail.svg"
-                alt="Email"
-                width={24}
-                height={24}
-                className="invert"
-              />
-            </Link>
-          </Button>
+          <CopyEmailButton />
           <Button variant="ghost" className="p-2 m-0 border size-12" asChild>
             <Link
               href="https://x.com/flambohh"
