@@ -1,0 +1,253 @@
+---
+import GitHubIcon from "@/assets/github.svg";
+import InstagramIcon from "@/assets/instagram.svg";
+import MailIcon from "@/assets/mail.svg";
+import TwitterIcon from "@/assets/twitter.svg";
+import "@/style.css";
+
+const socialLinkClass =
+  "inline-flex size-12 items-center justify-center rounded-md border p-2 outline-none transition-all hover:cursor-pointer hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring/50";
+
+const cardClass =
+  "bg-card text-card-foreground flex w-[min(90vw,24rem)] flex-col gap-y-2 rounded-xl border py-6 shadow-sm";
+
+const projects = [
+  {
+    href: "https://github.com/flamboh/netflow-analysis",
+    title: "networks research",
+    description:
+      "building internal tools with svelte, typescript, and python to analyze university-scale network traffic. supported by a competitive nsf-reu stipend.",
+  },
+  {
+    href: "https://thestoning.net",
+    title: "the stoning",
+    description:
+      "music publication website for album listening club. built by a team of 4 developers using react. articles, reviews, and interviews all created by club members.",
+  },
+  {
+    href: "https://tagium.oli.boo",
+    title: "tagium",
+    description: "modern way to update mp3 tags in your browser.",
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>oliboo</title>
+  </head>
+  <body class="bg-background text-foreground dark antialiased">
+    <div
+      class="mx-[5vw] flex min-h-screen flex-col items-center justify-center gap-y-4 font-sans lg:mx-[15vw] lg:grid lg:grid-cols-2 lg:items-center lg:justify-center lg:space-x-[10vw] lg:gap-y-0"
+    >
+      <div class="flex flex-col items-center lg:items-start">
+        <div
+          class="flex w-full flex-col items-center rounded-md py-4 lg:items-start"
+        >
+          <h1
+            class="text-foreground flex items-baseline gap-2 text-2xl font-bold"
+          >
+            hii, i'm oliver
+            <span class="text-muted text-sm text-pretty">he/they</span>
+          </h1>
+
+          <h2
+            class="text-accent-foreground text-center text-lg text-balance lg:text-left"
+          >
+            researcher, music lover, and computer science 3rd year
+            <br />
+            @ uoregon
+          </h2>
+        </div>
+        <div class="flex items-center justify-center gap-4 lg:justify-start">
+          <a
+            href="https://github.com/flamboh"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+            class={socialLinkClass}
+          >
+            <GitHubIcon class="size-6" aria-hidden="true" />
+          </a>
+          <button
+            type="button"
+            aria-label="Copy Email"
+            class={socialLinkClass}
+            data-copy-email
+            data-email="hi@oli.boo"
+          >
+            <MailIcon class="size-6" aria-hidden="true" />
+          </button>
+          <a
+            href="https://x.com/flambohh"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="X"
+            class={socialLinkClass}
+          >
+            <TwitterIcon class="size-6" aria-hidden="true" />
+          </a>
+          <a
+            href="https://instagram.com/flamb0h"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            class={socialLinkClass}
+          >
+            <InstagramIcon class="size-6" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+      <div class="flex flex-col items-end gap-y-4">
+        {
+          projects.map((project) => (
+            <div class={cardClass}>
+              <div class="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6">
+                <div class="leading-none font-semibold">
+                  <a
+                    href={project.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="underline"
+                  >
+                    {project.title}
+                  </a>
+                </div>
+              </div>
+              <div class="px-6">
+                <p class="text-primary text-pretty">{project.description}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div
+      id="toast-root"
+      class="toast-root"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+    </div>
+
+    <script>
+      const toastRoot = document.querySelector("#toast-root");
+      const copyEmailButton = document.querySelector("[data-copy-email]");
+
+      function showToast(
+        title: string,
+        description?: string,
+        kind: "default" | "error" = "default",
+      ) {
+        if (!toastRoot) return;
+        toastRoot.querySelector(".toast")?.remove();
+
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.tabIndex = 0;
+        if (kind === "error") toast.dataset.kind = "error";
+
+        const content = document.createElement("div");
+        content.className = "toast-content";
+
+        const titleNode = document.createElement("p");
+        titleNode.className = "toast-title";
+        titleNode.textContent = title;
+
+        content.append(titleNode);
+
+        if (description) {
+          const descriptionNode = document.createElement("p");
+          descriptionNode.className = "toast-description";
+          descriptionNode.textContent = description;
+          content.append(descriptionNode);
+        }
+
+        const closeButton = document.createElement("button");
+        closeButton.type = "button";
+        closeButton.className = "toast-close";
+        closeButton.setAttribute("aria-label", "Dismiss notification");
+        closeButton.innerHTML =
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8"></path><path d="M12 4l-8 8"></path></svg>';
+
+        toast.append(content, closeButton);
+        toastRoot.append(toast);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            toast.dataset.state = "open";
+          });
+        });
+
+        let dismissed = false;
+        let timeoutId = 0;
+        let startedAt = 0;
+        let remaining = 2600;
+
+        const dismiss = (immediate = false) => {
+          if (dismissed) return;
+          dismissed = true;
+          window.clearTimeout(timeoutId);
+
+          if (immediate) {
+            toast.remove();
+            return;
+          }
+
+          toast.dataset.state = "closed";
+          window.setTimeout(() => toast.remove(), 260);
+        };
+
+        const startTimer = () => {
+          if (dismissed) return;
+          window.clearTimeout(timeoutId);
+          startedAt = performance.now();
+          timeoutId = window.setTimeout(dismiss, remaining);
+        };
+
+        const pauseTimer = () => {
+          if (dismissed) return;
+          window.clearTimeout(timeoutId);
+          remaining = Math.max(0, remaining - (performance.now() - startedAt));
+        };
+
+        closeButton.addEventListener("click", () => dismiss());
+        toast.addEventListener("click", () => dismiss());
+        toast.addEventListener("pointerenter", pauseTimer);
+        toast.addEventListener("pointerleave", startTimer);
+        toast.addEventListener("focusin", pauseTimer);
+        toast.addEventListener("focusout", startTimer);
+        toast.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") dismiss();
+        });
+
+        startTimer();
+      }
+
+      async function copyEmail() {
+        if (!(copyEmailButton instanceof HTMLElement)) return;
+        const email = copyEmailButton.dataset.email ?? "hi@oli.boo";
+
+        try {
+          await navigator.clipboard.writeText(email);
+          showToast("copied to clipboard", email);
+        } catch {
+          showToast(
+            "clipboard access denied",
+            `copy ${email} manually`,
+            "error",
+          );
+        }
+      }
+
+      if (copyEmailButton instanceof HTMLButtonElement) {
+        copyEmailButton.addEventListener("click", copyEmail);
+      }
+    </script>
+  </body>
+</html>
