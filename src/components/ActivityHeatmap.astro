@@ -40,6 +40,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
       width="686"
       height="88"
       data-activity-image
+      data-theme-endpoint={`${endpoint}?display=minimal`}
     />
   </a>
   <p
@@ -56,6 +57,36 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 </div>
 
 <script>
+  const pageRoot = document.documentElement;
+
+  function syncActivityImageThemes() {
+    const theme = pageRoot.dataset.theme;
+    if (theme !== "light" && theme !== "dark") return;
+
+    requestAnimationFrame(() => {
+      document
+        .querySelectorAll<HTMLImageElement>("[data-activity-image]")
+        .forEach((image) => {
+          const endpoint = image.dataset.themeEndpoint;
+          if (!endpoint) return;
+
+          const url = new URL(endpoint, window.location.href);
+          if (url.searchParams.get("site-theme") === theme) return;
+
+          // The SVG uses prefers-color-scheme internally. Changing the URL
+          // makes mobile browsers reevaluate it against the image's new scheme.
+          url.searchParams.set("site-theme", theme);
+          image.src = url.toString();
+        });
+    });
+  }
+
+  new MutationObserver(syncActivityImageThemes).observe(pageRoot, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  syncActivityImageThemes();
+
   document
     .querySelectorAll<HTMLImageElement>("[data-activity-image]")
     .forEach((image) => {
@@ -172,8 +203,17 @@ const totalLabel = source === "github" ? "contributions" : "plays";
   }
 
   .activity-heatmap-image {
+    color-scheme: inherit;
     opacity: 0;
     transition: opacity 0.3s ease;
+  }
+
+  :global(html[data-theme="light"]) .activity-heatmap-image {
+    color-scheme: light;
+  }
+
+  :global(html[data-theme="dark"]) .activity-heatmap-image {
+    color-scheme: dark;
   }
 
   .activity-heatmap-image[data-visible="true"] {
