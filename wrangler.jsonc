@@ -5,8 +5,5 @@
   "compatibility_date": "2026-07-15",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "workers_dev": true,
-  "routes": [
-    { "pattern": "oli.boo", "custom_domain": true },
-    { "pattern": "www.oli.boo", "custom_domain": true },
-  ],
+  "routes": ["oli.boo/*", "www.oli.boo/*"],
 }
