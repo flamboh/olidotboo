@@ -1,0 +1,322 @@
+<div class="top-artists" data-top-artists>
+  <div class="top-artists-header">
+    <h3 class="top-artists-title">top artists</h3>
+    <div class="period-dropdown" data-period-dropdown>
+      <button
+        class="period-trigger"
+        type="button"
+        aria-expanded="false"
+        aria-controls="top-artist-periods"
+        data-period-trigger
+      >
+        <span data-period-label>180 days</span>
+      </button>
+      <div class="period-menu-viewport">
+        <div
+          class="period-menu"
+          id="top-artist-periods"
+          aria-label="Time period"
+        >
+          {
+            [30, 90, 180].map((days) => (
+              <button
+                type="button"
+                data-period={days}
+                aria-current={days === 180 ? "true" : undefined}
+              >
+                {days} days
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="artists-content">
+    <ol aria-live="polite" aria-busy="true" data-artist-list></ol>
+    <p class="artist-status" role="status" data-artist-status>loading…</p>
+  </div>
+</div>
+
+<script>
+  interface Artist {
+    name: string;
+    playcount: number;
+    url: string;
+  }
+
+  document
+    .querySelectorAll<HTMLElement>("[data-top-artists]")
+    .forEach((root) => {
+      const list = root.querySelector<HTMLOListElement>("[data-artist-list]");
+      const status = root.querySelector<HTMLElement>("[data-artist-status]");
+      const dropdown = root.querySelector<HTMLElement>(
+        "[data-period-dropdown]",
+      );
+      const trigger = root.querySelector<HTMLButtonElement>(
+        "[data-period-trigger]",
+      );
+      const periodLabel = root.querySelector<HTMLElement>(
+        "[data-period-label]",
+      );
+      const content = root.querySelector<HTMLElement>(".artists-content");
+      const buttons = root.querySelectorAll<HTMLButtonElement>("[data-period]");
+      const loaded = new Map<string, Artist[]>();
+      const transitionDuration = matchMedia("(prefers-reduced-motion: reduce)")
+        .matches
+        ? 0
+        : 180;
+      let requestId = 0;
+
+      function setDropdownOpen(open: boolean) {
+        if (!dropdown || !trigger) return;
+        dropdown.dataset.open = String(open);
+        trigger.setAttribute("aria-expanded", String(open));
+      }
+
+      function render(artists: Artist[]) {
+        if (!list || !status) return;
+        list.replaceChildren(
+          ...artists.map((artist) => {
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            const count = document.createElement("span");
+            item.className = "artist-item";
+            link.className = "artist-name";
+            count.className = "artist-count";
+            link.href = artist.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = artist.name;
+            count.textContent = `${artist.playcount.toLocaleString()} plays`;
+            item.append(link, count);
+            return item;
+          }),
+        );
+        status.hidden = true;
+        list.setAttribute("aria-busy", "false");
+      }
+
+      async function fadeOutContent() {
+        if (!content || transitionDuration === 0) return;
+        content.classList.add("is-changing");
+        await new Promise((resolve) => setTimeout(resolve, transitionDuration));
+      }
+
+      function fadeInContent() {
+        content?.classList.remove("is-changing");
+      }
+
+      async function selectPeriod(period: string) {
+        const currentRequest = ++requestId;
+        buttons.forEach((button) => {
+          if (button.dataset.period === period) {
+            button.setAttribute("aria-current", "true");
+          } else {
+            button.removeAttribute("aria-current");
+          }
+        });
+        if (periodLabel) periodLabel.textContent = `${period} days`;
+        setDropdownOpen(false);
+
+        await fadeOutContent();
+        if (currentRequest !== requestId) return;
+
+        const cached = loaded.get(period);
+        if (cached) {
+          render(cached);
+          fadeInContent();
+          return;
+        }
+
+        if (list && status) {
+          list.replaceChildren();
+          list.setAttribute("aria-busy", "true");
+          status.textContent = "loading…";
+          status.hidden = false;
+        }
+        fadeInContent();
+
+        try {
+          const response = await fetch(`/api/top-artists?period=${period}`);
+          if (!response.ok) throw new Error("Unable to load top artists");
+          const data = (await response.json()) as { artists?: Artist[] };
+          if (!Array.isArray(data.artists)) throw new Error("Invalid response");
+          loaded.set(period, data.artists);
+          if (currentRequest !== requestId) return;
+          await fadeOutContent();
+          if (currentRequest !== requestId) return;
+          render(data.artists);
+          fadeInContent();
+        } catch {
+          if (currentRequest !== requestId || !list || !status) return;
+          await fadeOutContent();
+          if (currentRequest !== requestId) return;
+          list.replaceChildren();
+          list.setAttribute("aria-busy", "false");
+          status.textContent = "top artists unavailable";
+          status.hidden = false;
+          fadeInContent();
+        }
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.dataset.period) void selectPeriod(button.dataset.period);
+        });
+      });
+
+      trigger?.addEventListener("click", () => {
+        setDropdownOpen(trigger.getAttribute("aria-expanded") !== "true");
+      });
+
+      document.addEventListener("click", (event) => {
+        if (event.target instanceof Node && !dropdown?.contains(event.target)) {
+          setDropdownOpen(false);
+        }
+      });
+
+      dropdown?.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        setDropdownOpen(false);
+        trigger?.focus();
+      });
+
+      void selectPeriod("180");
+    });
+</script>
+
+<style>
+  .top-artists {
+    margin-top: 1.5rem;
+  }
+
+  .top-artists-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .top-artists-title {
+    color: var(--fg-tertiary);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+  }
+
+  .period-dropdown {
+    position: relative;
+    width: calc(8ch + 0.625rem);
+    font-size: 0.75rem;
+  }
+
+  .period-trigger {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 0.3125rem 0.125rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--fg-tertiary);
+  }
+
+  .period-menu-viewport {
+    position: absolute;
+    z-index: 2;
+    top: calc(100% - 1px);
+    right: -1px;
+    width: calc(100% + 2px);
+    height: 6rem;
+    overflow: hidden;
+    pointer-events: none;
+    visibility: hidden;
+    transition: visibility 0s linear 0.34s;
+  }
+
+  .period-menu {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+    transform: translateY(-100%);
+    transition: transform 0.34s cubic-bezier(0.22, 0.8, 0.25, 1);
+  }
+
+  .period-dropdown[data-open="true"] .period-menu-viewport {
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+
+  .period-dropdown[data-open="true"] .period-menu {
+    transform: translateY(0);
+  }
+
+  .period-menu button {
+    display: block;
+    width: 100%;
+    padding: 0.25rem;
+    text-align: left;
+    white-space: nowrap;
+    border-radius: 2px;
+  }
+
+  .period-menu button:hover {
+    background: var(--border);
+  }
+
+  .period-menu button[aria-current="true"] {
+    color: var(--fg);
+  }
+
+  .artists-content {
+    display: grid;
+    min-height: 7rem;
+    margin-top: 0.875rem;
+    transition: opacity 0.18s ease;
+  }
+
+  .artists-content.is-changing {
+    opacity: 0;
+  }
+
+  ol {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 2rem;
+    list-style: none;
+  }
+
+  .top-artists :global(.artist-item) {
+    min-width: 0;
+  }
+
+  .top-artists :global(.artist-name),
+  .top-artists :global(.artist-count) {
+    display: block;
+  }
+
+  .top-artists :global(.artist-count) {
+    margin-top: 0.125rem;
+    color: var(--fg-tertiary);
+    font-size: 0.75rem;
+  }
+
+  .artist-status {
+    grid-area: 1 / 1;
+    place-self: center;
+    color: var(--fg-tertiary);
+    font-size: 0.75rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .period-menu,
+    .artists-content {
+      transition: none;
+    }
+  }
+</style>

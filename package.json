@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "deploy": "bun run build && wrangler deploy",
     "preview": "astro preview",
     "astro": "astro",
     "fmt": "prettier --write .",
@@ -13,16 +14,19 @@
     "lint:fix": "oxlint --fix"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "13.7.0",
     "@tailwindcss/vite": "^4.2.2",
-    "astro": "^6.0.8",
+    "astro": "6.4.8",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260715.1",
     "oxlint": "^1.56.0",
     "oxlint-tsgolint": "^0.17.1",
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.7.2"
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "wrangler": "^4.111.0"
   },
   "engines": {
     "node": ">=22.12.0"

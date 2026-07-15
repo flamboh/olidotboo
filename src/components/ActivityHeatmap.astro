@@ -1,0 +1,211 @@
+---
+interface Props {
+  username: string;
+  source: "github" | "lastfm";
+  profileUrl: string;
+  alt: string;
+  streakLabel: "contribution" | "listening";
+  spaced?: boolean;
+}
+
+const {
+  username,
+  source,
+  profileUrl,
+  alt,
+  streakLabel,
+  spaced = false,
+} = Astro.props;
+const encodedUsername = encodeURIComponent(username);
+const endpoint = `https://heat.oli.boo/${source}/${encodedUsername}`;
+const totalLabel = source === "github" ? "contributions" : "plays";
+---
+
+<div class:list={["activity-source", { "activity-source--spaced": spaced }]}>
+  <h3 class="activity-source-label">
+    {source === "github" ? "github" : "last.fm"}
+  </h3>
+  <a
+    class="activity-heatmap"
+    href={profileUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label={`${username}'s ${source === "github" ? "GitHub" : "Last.fm"} profile`}
+  >
+    <img
+      class="activity-heatmap-image"
+      src={`${endpoint}?display=minimal`}
+      {alt}
+      loading="lazy"
+      width="686"
+      height="88"
+      data-activity-image
+    />
+  </a>
+  <p
+    class="activity-summary"
+    data-activity-summary
+    data-streak-endpoint={`${endpoint}/streak`}
+    data-total-endpoint={`${endpoint}/total`}
+    data-streak-label={streakLabel}
+    data-total-label={totalLabel}
+    aria-live="polite"
+    aria-atomic="true"
+  >
+  </p>
+</div>
+
+<script>
+  document
+    .querySelectorAll<HTMLImageElement>("[data-activity-image]")
+    .forEach((image) => {
+      const reveal = () => (image.dataset.visible = "true");
+      if (image.complete && image.naturalWidth > 0) {
+        reveal();
+      } else {
+        image.addEventListener("load", reveal, { once: true });
+      }
+    });
+
+  document
+    .querySelectorAll<HTMLElement>("[data-activity-summary]")
+    .forEach(async (element) => {
+      if (element.dataset.loaded === "true") return;
+      element.dataset.loaded = "true";
+
+      const streakEndpoint = element.dataset.streakEndpoint;
+      const totalEndpoint = element.dataset.totalEndpoint;
+      const streakLabel = element.dataset.streakLabel;
+      const totalLabel = element.dataset.totalLabel;
+      if (!streakEndpoint || !totalEndpoint || !streakLabel || !totalLabel)
+        return;
+
+      const streakText = fetch(streakEndpoint)
+        .then(async (response) => {
+          if (!response.ok) return null;
+          const data: unknown = await response.json();
+          if (
+            typeof data !== "object" ||
+            data === null ||
+            !("streak" in data) ||
+            typeof data.streak !== "number"
+          )
+            return null;
+
+          const days = data.streak;
+          return `${days.toLocaleString()} day${days === 1 ? "" : "s"} ${streakLabel} streak`;
+        })
+        .catch(() => null);
+
+      const totalText = fetch(totalEndpoint)
+        .then(async (response) => {
+          if (!response.ok) return null;
+          const data: unknown = await response.json();
+          if (
+            typeof data !== "object" ||
+            data === null ||
+            !("total" in data) ||
+            typeof data.total !== "number"
+          )
+            return null;
+
+          return `${data.total.toLocaleString()} ${totalLabel} in the last year`;
+        })
+        .catch(() => null);
+
+      const parts = (await Promise.all([streakText, totalText])).filter(
+        (part): part is string => part !== null,
+      );
+      if (parts.length > 0) {
+        element.textContent = parts.join(" · ");
+        element.dataset.visible = "true";
+      }
+    });
+</script>
+
+<style>
+  .activity-source {
+    margin-top: 1.25rem;
+  }
+
+  .activity-source--spaced {
+    margin-top: 1.5rem;
+  }
+
+  .activity-source-label {
+    margin-bottom: 0.5rem;
+    color: var(--fg-tertiary);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+  }
+
+  .activity-heatmap {
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .activity-heatmap::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .activity-heatmap::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .activity-heatmap::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  .activity-heatmap::-webkit-scrollbar-thumb:hover {
+    background: var(--fg-tertiary);
+  }
+
+  .activity-heatmap img {
+    display: block;
+    width: 686px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .activity-heatmap-image {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .activity-heatmap-image[data-visible="true"] {
+    opacity: 1;
+  }
+
+  .activity-summary {
+    margin-top: 0.5rem;
+    min-height: 1.65em;
+    color: var(--fg-tertiary);
+    font-size: 0.75rem;
+    line-height: 1.65;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .activity-summary[data-visible="true"] {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .activity-heatmap-image,
+    .activity-summary {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .activity-summary {
+      min-height: 3.3em;
+    }
+  }
+</style>

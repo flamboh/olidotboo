@@ -10,8 +10,9 @@ const { username = "flamboh" } = Astro.props;
 
 <ActivityHeatmap
   {username}
-  source="github"
-  profileUrl={`https://github.com/${encodeURIComponent(username)}`}
-  alt="GitHub contribution activity"
-  streakLabel="contribution"
+  source="lastfm"
+  profileUrl={`https://www.last.fm/user/${encodeURIComponent(username)}`}
+  alt="Last.fm listening activity"
+  streakLabel="listening"
+  spaced
 />

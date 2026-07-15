@@ -1,5 +1,7 @@
 ---
 import GithubGraph from "@/components/GithubGraph.astro";
+import LastfmHeatmap from "@/components/LastfmHeatmap.astro";
+import TopArtists from "@/components/TopArtists.astro";
 import { email, experience, projects, socials } from "@/data";
 
 const sections = [
@@ -34,7 +36,8 @@ const sections = [
             oliver boorstein <span class="pronouns">he/they</span>
           </h1>
           <p class="tagline">
-            researcher & music lover — cs + data science @ uoregon
+            researcher, full-stack dev & track listener — cs + data science @
+            uoregon
           </p>
           <button
             class="contact-line"
@@ -86,6 +89,8 @@ const sections = [
       <section aria-labelledby="activity-label">
         <h2 class="label" id="activity-label">activity</h2>
         <GithubGraph />
+        <LastfmHeatmap />
+        <TopArtists />
       </section>
 
       <footer>
@@ -185,6 +190,37 @@ const sections = [
         padding: 4.5rem 1.25rem 5rem;
       }
 
+      main > .masthead,
+      main > .content-grid,
+      main > section[aria-labelledby="activity-label"],
+      main > footer {
+        animation: page-enter 0.48s cubic-bezier(0.22, 0.8, 0.25, 1) both;
+      }
+
+      main > .content-grid {
+        animation-delay: 0.05s;
+      }
+
+      main > section[aria-labelledby="activity-label"] {
+        animation-delay: 0.1s;
+      }
+
+      main > footer {
+        animation-delay: 0.15s;
+      }
+
+      @keyframes page-enter {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       a {
         color: var(--fg);
         text-decoration: underline;
@@ -258,7 +294,11 @@ const sections = [
       }
 
       section[aria-labelledby="activity-label"] {
-        margin-top: 3.5rem;
+        margin-top: 3rem;
+      }
+
+      #activity-label {
+        border-bottom: 1px solid var(--border);
       }
 
       .label {
@@ -297,7 +337,7 @@ const sections = [
       }
 
       footer {
-        margin-top: 4rem;
+        margin-top: 3.5rem;
         padding-top: 1.25rem;
         border-top: 1px solid var(--border);
         display: flex;
@@ -326,6 +366,15 @@ const sections = [
         .content-grid {
           grid-template-columns: 1fr;
           gap: 3.5rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        main > .masthead,
+        main > .content-grid,
+        main > section[aria-labelledby="activity-label"],
+        main > footer {
+          animation: none;
         }
       }
     </style>
