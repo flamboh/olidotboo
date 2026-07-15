@@ -1,6 +1,12 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "olidotboo",
+  "account_id": "2bfd49b5505b1528dad6678b83c75fb4",
   "compatibility_date": "2026-07-15",
   "main": "@astrojs/cloudflare/entrypoints/server",
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "oli.boo", "custom_domain": true },
+    { "pattern": "www.oli.boo", "custom_domain": true },
+  ],
 }
