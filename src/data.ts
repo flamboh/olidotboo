@@ -32,7 +32,7 @@ export const experience: Entry[] = [
     title: "album listening club",
     subtitle: "co-president",
     href: "https://thestoning.net/alc",
-    description: "leading one of oregon's greatest student clubs.",
+    description: "leading one of oregon's greatest student orgs.",
   },
 ];
 
