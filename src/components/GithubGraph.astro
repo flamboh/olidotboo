@@ -1,0 +1,17 @@
+---
+import ActivityHeatmap from "@/components/ActivityHeatmap.astro";
+
+interface Props {
+  username?: string;
+}
+
+const { username = "flamboh" } = Astro.props;
+---
+
+<ActivityHeatmap
+  {username}
+  source="github"
+  profileUrl={`https://github.com/${encodeURIComponent(username)}`}
+  alt="GitHub contribution activity"
+  streakLabel="contribution"
+/>

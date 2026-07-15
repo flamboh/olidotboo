@@ -1,0 +1,18 @@
+---
+import ActivityHeatmap from "@/components/ActivityHeatmap.astro";
+
+interface Props {
+  username?: string;
+}
+
+const { username = "flamboh" } = Astro.props;
+---
+
+<ActivityHeatmap
+  {username}
+  source="lastfm"
+  profileUrl={`https://www.last.fm/user/${encodeURIComponent(username)}`}
+  alt="Last.fm listening activity"
+  streakLabel="listening"
+  spaced
+/>
