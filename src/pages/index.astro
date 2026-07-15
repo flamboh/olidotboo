@@ -1,34 +1,10 @@
 ---
-import GitHubIcon from "@/assets/github.svg";
-import InstagramIcon from "@/assets/instagram.svg";
-import MailIcon from "@/assets/mail.svg";
-import TwitterIcon from "@/assets/twitter.svg";
-import "@/style.css";
+import GithubGraph from "@/components/GithubGraph.astro";
+import { email, experience, projects, socials } from "@/data";
 
-const socialLinkClass =
-  "inline-flex size-12 items-center justify-center rounded-md border p-2 outline-none transition-all hover:cursor-pointer hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring/50";
-
-const cardClass =
-  "bg-card text-card-foreground flex w-[min(90vw,24rem)] flex-col gap-y-2 rounded-xl border py-6 shadow-sm";
-
-const projects = [
-  {
-    href: "https://github.com/flamboh/netflow-analysis",
-    title: "networks research",
-    description:
-      "building internal tools with svelte, typescript, and python to analyze university-scale network traffic. supported by a competitive nsf-reu stipend.",
-  },
-  {
-    href: "https://thestoning.net",
-    title: "the stoning",
-    description:
-      "music publication website for album listening club. built by a team of 4 developers using react. articles, reviews, and interviews all created by club members.",
-  },
-  {
-    href: "https://tagium.oli.boo",
-    title: "tagium",
-    description: "modern way to update mp3 tags in your browser.",
-  },
+const sections = [
+  { id: "experience", label: "experience", entries: experience },
+  { id: "projects", label: "projects", entries: projects },
 ];
 ---
 
@@ -38,216 +14,320 @@ const projects = [
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+    <meta
+      name="description"
+      content="oliver boorstein — researcher, music lover, cs + data science @ uoregon"
+    />
     <title>oliboo</title>
+    <script is:inline>
+      const stored = localStorage.getItem("theme");
+      document.documentElement.dataset.theme =
+        stored ??
+        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    </script>
   </head>
-  <body class="bg-background text-foreground dark antialiased">
-    <div
-      class="mx-[5vw] flex min-h-screen flex-col items-center justify-center gap-y-4 font-sans lg:mx-[15vw] lg:grid lg:grid-cols-2 lg:items-center lg:justify-center lg:space-x-[10vw] lg:gap-y-0"
-    >
-      <div class="flex flex-col items-center lg:items-start">
-        <div
-          class="flex w-full flex-col items-center rounded-md py-4 lg:items-start"
-        >
-          <h1
-            class="text-foreground flex items-baseline gap-2 text-2xl font-bold"
-          >
-            hii, i'm oliver
-            <span class="text-muted text-sm text-pretty">he/they</span>
+  <body>
+    <main>
+      <header class="masthead">
+        <div>
+          <h1>
+            oliver boorstein <span class="pronouns">he/they</span>
           </h1>
-
-          <h2
-            class="text-accent-foreground text-center text-lg text-balance lg:text-left"
-          >
-            researcher, music lover, and computer science 3rd year
-            <br />
-            @ uoregon
-          </h2>
-        </div>
-        <div class="flex items-center justify-center gap-4 lg:justify-start">
-          <a
-            href="https://github.com/flamboh"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub"
-            class={socialLinkClass}
-          >
-            <GitHubIcon class="size-6" aria-hidden="true" />
-          </a>
+          <p class="tagline">
+            researcher & music lover — cs + data science @ uoregon
+          </p>
           <button
+            class="contact-line"
             type="button"
-            aria-label="Copy Email"
-            class={socialLinkClass}
             data-copy-email
-            data-email="hi@oli.boo"
+            data-email={email}
           >
-            <MailIcon class="size-6" aria-hidden="true" />
+            contact me: {email}
           </button>
-          <a
-            href="https://x.com/flambohh"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="X"
-            class={socialLinkClass}
-          >
-            <TwitterIcon class="size-6" aria-hidden="true" />
-          </a>
-          <a
-            href="https://instagram.com/flamb0h"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            class={socialLinkClass}
-          >
-            <InstagramIcon class="size-6" aria-hidden="true" />
-          </a>
         </div>
-      </div>
-      <div class="flex flex-col items-end gap-y-4">
+        <button type="button" data-theme-toggle aria-label="switch theme">
+          [dark]
+        </button>
+      </header>
+
+      <div class="content-grid">
         {
-          projects.map((project) => (
-            <div class={cardClass}>
-              <div class="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6">
-                <div class="leading-none font-semibold">
-                  <a
-                    href={project.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="underline"
-                  >
-                    {project.title}
-                  </a>
-                </div>
-              </div>
-              <div class="px-6">
-                <p class="text-primary text-pretty">{project.description}</p>
-              </div>
-            </div>
+          sections.map((section) => (
+            <section class={section.id} aria-labelledby={`${section.id}-label`}>
+              <h2 class="label" id={`${section.id}-label`}>
+                {section.label}
+              </h2>
+              {section.entries.map((entry) => (
+                <article class="row">
+                  <h3>
+                    {entry.href ? (
+                      <a
+                        href={entry.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {entry.title}
+                      </a>
+                    ) : (
+                      entry.title
+                    )}
+                    {entry.subtitle && (
+                      <span class="subtitle">{entry.subtitle}</span>
+                    )}
+                  </h3>
+                  <p class="description">{entry.description}</p>
+                </article>
+              ))}
+            </section>
           ))
         }
       </div>
-    </div>
 
-    <div
-      id="toast-root"
-      class="toast-root"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-    </div>
+      <section aria-labelledby="activity-label">
+        <h2 class="label" id="activity-label">activity</h2>
+        <GithubGraph />
+      </section>
+
+      <footer>
+        {
+          socials.map((social) => (
+            <a
+              href={social.href}
+              target={social.href.startsWith("/") ? undefined : "_blank"}
+              rel="noopener noreferrer"
+            >
+              {social.label}
+            </a>
+          ))
+        }
+      </footer>
+    </main>
 
     <script>
-      const toastRoot = document.querySelector("#toast-root");
-      const copyEmailButton = document.querySelector("[data-copy-email]");
+      const root = document.documentElement;
+      const toggle = document.querySelector<HTMLButtonElement>(
+        "[data-theme-toggle]",
+      );
 
-      function showToast(
-        title: string,
-        description?: string,
-        kind: "default" | "error" = "default",
-      ) {
-        if (!toastRoot) return;
-        toastRoot.querySelector(".toast")?.remove();
-
-        const toast = document.createElement("div");
-        toast.className = "toast";
-        toast.tabIndex = 0;
-        if (kind === "error") toast.dataset.kind = "error";
-
-        const content = document.createElement("div");
-        content.className = "toast-content";
-
-        const titleNode = document.createElement("p");
-        titleNode.className = "toast-title";
-        titleNode.textContent = title;
-
-        content.append(titleNode);
-
-        if (description) {
-          const descriptionNode = document.createElement("p");
-          descriptionNode.className = "toast-description";
-          descriptionNode.textContent = description;
-          content.append(descriptionNode);
-        }
-
-        const closeButton = document.createElement("button");
-        closeButton.type = "button";
-        closeButton.className = "toast-close";
-        closeButton.setAttribute("aria-label", "Dismiss notification");
-        closeButton.innerHTML =
-          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8"></path><path d="M12 4l-8 8"></path></svg>';
-
-        toast.append(content, closeButton);
-        toastRoot.append(toast);
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            toast.dataset.state = "open";
-          });
-        });
-
-        let dismissed = false;
-        let timeoutId = 0;
-        let startedAt = 0;
-        let remaining = 2600;
-
-        const dismiss = (immediate = false) => {
-          if (dismissed) return;
-          dismissed = true;
-          window.clearTimeout(timeoutId);
-
-          if (immediate) {
-            toast.remove();
-            return;
-          }
-
-          toast.dataset.state = "closed";
-          window.setTimeout(() => toast.remove(), 260);
-        };
-
-        const startTimer = () => {
-          if (dismissed) return;
-          window.clearTimeout(timeoutId);
-          startedAt = performance.now();
-          timeoutId = window.setTimeout(dismiss, remaining);
-        };
-
-        const pauseTimer = () => {
-          if (dismissed) return;
-          window.clearTimeout(timeoutId);
-          remaining = Math.max(0, remaining - (performance.now() - startedAt));
-        };
-
-        closeButton.addEventListener("click", () => dismiss());
-        toast.addEventListener("click", () => dismiss());
-        toast.addEventListener("pointerenter", pauseTimer);
-        toast.addEventListener("pointerleave", startTimer);
-        toast.addEventListener("focusin", pauseTimer);
-        toast.addEventListener("focusout", startTimer);
-        toast.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") dismiss();
-        });
-
-        startTimer();
+      function syncToggle() {
+        if (!toggle) return;
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        toggle.textContent = `[${next}]`;
+        toggle.setAttribute("aria-label", `switch to ${next} theme`);
       }
 
-      async function copyEmail() {
-        if (!(copyEmailButton instanceof HTMLElement)) return;
-        const email = copyEmailButton.dataset.email ?? "hi@oli.boo";
+      toggle?.addEventListener("click", () => {
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        localStorage.setItem("theme", next);
+        syncToggle();
+      });
+      syncToggle();
 
+      const copyButton =
+        document.querySelector<HTMLButtonElement>("[data-copy-email]");
+      const copyLabel = copyButton?.textContent ?? "";
+      copyButton?.addEventListener("click", async () => {
+        const address = copyButton.dataset.email ?? "";
         try {
-          await navigator.clipboard.writeText(email);
-          showToast("copied to clipboard", email);
+          await navigator.clipboard.writeText(address);
+          copyButton.textContent = "copied!";
         } catch {
-          showToast(
-            "clipboard access denied",
-            `copy ${email} manually`,
-            "error",
-          );
+          copyButton.textContent = "copy failed";
         }
+        setTimeout(() => (copyButton.textContent = copyLabel), 1600);
+      });
+    </script>
+
+    <style is:global>
+      :root {
+        color-scheme: light;
+        --bg: #fafafa;
+        --fg: #111111;
+        --fg-secondary: #616161;
+        --fg-tertiary: #9e9e9e;
+        --border: #e2e2e2;
+        --accent: #15803d;
       }
 
-      if (copyEmailButton instanceof HTMLButtonElement) {
-        copyEmailButton.addEventListener("click", copyEmail);
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #000000;
+        --fg: #ededed;
+        --fg-secondary: #8f8f8f;
+        --fg-tertiary: #5c5c5c;
+        --border: #1e1e1e;
+        --accent: #4ade80;
       }
-    </script>
+
+      * {
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+        font-size: 0.875rem;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        transition:
+          background-color 0.2s ease,
+          color 0.15s ease;
+      }
+
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 4.5rem 1.25rem 5rem;
+      }
+
+      a {
+        color: var(--fg);
+        text-decoration: underline;
+        text-decoration-color: var(--fg-tertiary);
+        text-underline-offset: 3px;
+        transition: 0.15s ease;
+        transition-property: color, text-decoration-color;
+      }
+
+      a:hover {
+        color: var(--accent);
+        text-decoration-color: var(--accent);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
+      .masthead {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      h1 {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .pronouns {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--fg-tertiary);
+      }
+
+      .tagline {
+        margin-top: 0.375rem;
+        color: var(--fg-secondary);
+        text-wrap: balance;
+      }
+
+      .contact-line {
+        display: block;
+        margin-top: 0.125rem;
+        color: var(--fg-tertiary);
+        font-size: 0.8125rem;
+      }
+
+      button {
+        font: inherit;
+        color: var(--fg-secondary);
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: color 0.15s ease;
+      }
+
+      button:hover {
+        color: var(--accent);
+      }
+
+      .content-grid {
+        margin-top: 2.25rem;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem;
+      }
+
+      section[aria-labelledby="activity-label"] {
+        margin-top: 3.5rem;
+      }
+
+      .label {
+        font-size: 0.6875rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--fg-tertiary);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+      }
+
+      .row {
+        margin-top: 1.375rem;
+      }
+
+      h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        font-weight: 400;
+        color: var(--fg-secondary);
+      }
+
+      .experience .subtitle {
+        display: block;
+      }
+
+      .description {
+        margin-top: 0.25rem;
+        font-size: 0.8125rem;
+        color: var(--fg-secondary);
+        text-wrap: pretty;
+      }
+
+      footer {
+        margin-top: 4rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        column-gap: 1.25rem;
+        row-gap: 0.5rem;
+        font-size: 0.8125rem;
+      }
+
+      footer a,
+      footer button {
+        color: var(--fg-secondary);
+        text-decoration: none;
+      }
+
+      footer a:hover,
+      footer button:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding-top: 2.5rem;
+        }
+
+        .content-grid {
+          grid-template-columns: 1fr;
+          gap: 3.5rem;
+        }
+      }
+    </style>
   </body>
 </html>

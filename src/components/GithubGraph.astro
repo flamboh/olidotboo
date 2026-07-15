@@ -1,0 +1,55 @@
+---
+interface Props {
+  username?: string;
+}
+
+const { username = "flamboh" } = Astro.props;
+---
+
+<div class="github-contributions">
+  <img
+    src={`https://ghchart.rshah.org/${username}`}
+    alt="github contributions"
+    loading="lazy"
+  />
+</div>
+
+<style is:global>
+  .github-contributions {
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-height: 0;
+  }
+
+  .github-contributions::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .github-contributions::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .github-contributions::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  .github-contributions::-webkit-scrollbar-thumb:hover {
+    background: var(--fg-tertiary);
+  }
+
+  .github-contributions img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+
+  /* hue-rotate keeps the cells green instead of invert's pink */
+  html[data-theme="dark"] .github-contributions img {
+    filter: invert(1) hue-rotate(180deg);
+  }
+</style>
