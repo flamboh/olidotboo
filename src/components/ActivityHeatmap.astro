@@ -40,6 +40,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
       width="686"
       height="88"
       data-activity-image
+      data-theme-endpoint={`${endpoint}?display=minimal`}
     />
   </a>
   <p
@@ -56,6 +57,62 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 </div>
 
 <script>
+  import { applySvgTheme, type SvgTheme } from "@/lib/svg-theme";
+
+  const pageRoot = document.documentElement;
+  const svgResponses = new Map<string, Promise<string>>();
+  const imageObjectUrls = new WeakMap<HTMLImageElement, string>();
+
+  function getSvg(endpoint: string) {
+    const cached = svgResponses.get(endpoint);
+    if (cached) return cached;
+
+    const request = fetch(endpoint).then((response) => {
+      if (!response.ok) throw new Error("Unable to load activity SVG");
+      return response.text();
+    });
+    svgResponses.set(endpoint, request);
+    return request;
+  }
+
+  async function applyActivityImageTheme(
+    image: HTMLImageElement,
+    theme: SvgTheme,
+  ) {
+    const endpoint = image.dataset.themeEndpoint;
+    if (!endpoint) return;
+
+    try {
+      const svg = await getSvg(endpoint);
+      if (pageRoot.dataset.theme !== theme) return;
+
+      const objectUrl = URL.createObjectURL(
+        new Blob([applySvgTheme(svg, theme)], { type: "image/svg+xml" }),
+      );
+      const previousObjectUrl = imageObjectUrls.get(image);
+      imageObjectUrls.set(image, objectUrl);
+      image.src = objectUrl;
+      if (previousObjectUrl) URL.revokeObjectURL(previousObjectUrl);
+    } catch {
+      // Keep the endpoint-rendered image as a fallback if fetching fails.
+    }
+  }
+
+  function syncActivityImageThemes() {
+    const theme = pageRoot.dataset.theme;
+    if (theme !== "light" && theme !== "dark") return;
+
+    document
+      .querySelectorAll<HTMLImageElement>("[data-activity-image]")
+      .forEach((image) => void applyActivityImageTheme(image, theme));
+  }
+
+  new MutationObserver(syncActivityImageThemes).observe(pageRoot, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  syncActivityImageThemes();
+
   document
     .querySelectorAll<HTMLImageElement>("[data-activity-image]")
     .forEach((image) => {
