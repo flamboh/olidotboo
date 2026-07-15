@@ -5,7 +5,6 @@ export const socials = [
   { label: "twitter", href: "https://x.com/flambohh" },
   { label: "instagram", href: "https://instagram.com/flamb0h" },
   { label: "linkedin", href: "https://linkedin.com/in/oliboo" },
-  { label: "resume", href: "/Oliver_Boorstein_Resume.pdf" },
 ];
 
 export interface Entry {
