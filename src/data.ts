@@ -24,7 +24,7 @@ export const experience: Entry[] = [
   {
     title: "oregon networking research group",
     subtitle: "undergraduate researcher",
-    href: "https://github.com/flamboh/netflow-analysis",
+    href: "https://onrg.gitlab.io/",
     description: "researching large-scale network telemetry.",
   },
   {
@@ -38,7 +38,7 @@ export const experience: Entry[] = [
 export const projects: Entry[] = [
   {
     title: "tagium",
-    href: "https://tagium.oli.boo",
+    href: "https://tagium.app/",
     description: "save tracks you love and update metadata all in the browser.",
   },
   {
