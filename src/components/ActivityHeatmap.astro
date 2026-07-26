@@ -61,7 +61,36 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   const pageRoot = document.documentElement;
   const svgResponses = new Map<string, Promise<string>>();
-  const imageObjectUrls = new WeakMap<HTMLImageElement, string>();
+  // Both themed variants per image, built and decoded up front so a theme
+  // switch is a lookup rather than a fetch, a blob and a decode.
+  const themedUrls = new WeakMap<
+    HTMLImageElement,
+    Partial<Record<SvgTheme, string>>
+  >();
+  // Read from CSS so the cleanup timing follows --crossfade, including the
+  // dev-only slow-motion override.
+  const crossfadeDuration =
+    parseFloat(getComputedStyle(pageRoot).getPropertyValue("--crossfade")) *
+      1000 || 220;
+
+  // The heatmap is an <img>, so a theme switch replaces the whole bitmap at
+  // once. Fade the outgoing frame out over the incoming one to match the
+  // page's own theme transition.
+  function crossfade(image: HTMLImageElement, nextSrc: string) {
+    const ghost = document.createElement("img");
+    ghost.className = "activity-heatmap-ghost";
+    ghost.src = image.src;
+    ghost.alt = "";
+    ghost.setAttribute("aria-hidden", "true");
+    image.parentElement?.appendChild(ghost);
+
+    image.src = nextSrc;
+    // Force the ghost's starting opacity to be computed; without this the
+    // browser only ever sees the final value and skips the transition.
+    void getComputedStyle(ghost).opacity;
+    ghost.dataset.fading = "true";
+    setTimeout(() => ghost.remove(), crossfadeDuration + 60);
+  }
 
   function getSvg(endpoint: string) {
     const cached = svgResponses.get(endpoint);
@@ -75,6 +104,27 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     return request;
   }
 
+  // Both variants are held for the life of the page, so the URLs are never
+  // revoked — two small SVG blobs per heatmap.
+  async function prepareThemes(image: HTMLImageElement, endpoint: string) {
+    const svg = await getSvg(endpoint);
+    const variants = themedUrls.get(image) ?? {};
+    themedUrls.set(image, variants);
+
+    await Promise.all(
+      (["light", "dark"] as SvgTheme[]).map(async (variant) => {
+        if (variants[variant]) return;
+        variants[variant] = URL.createObjectURL(
+          new Blob([applySvgTheme(svg, variant)], { type: "image/svg+xml" }),
+        );
+        // Decode now so the swap can't flash an empty frame later.
+        const preload = new Image();
+        preload.src = variants[variant];
+        await preload.decode().catch(() => undefined);
+      }),
+    );
+  }
+
   async function applyActivityImageTheme(
     image: HTMLImageElement,
     theme: SvgTheme,
@@ -83,16 +133,20 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     if (!endpoint) return;
 
     try {
-      const svg = await getSvg(endpoint);
-      if (pageRoot.dataset.theme !== theme) return;
+      if (!themedUrls.get(image)?.[theme]) await prepareThemes(image, endpoint);
+      const next = themedUrls.get(image)?.[theme];
+      if (!next || pageRoot.dataset.theme !== theme || image.src === next)
+        return;
 
-      const objectUrl = URL.createObjectURL(
-        new Blob([applySvgTheme(svg, theme)], { type: "image/svg+xml" }),
-      );
-      const previousObjectUrl = imageObjectUrls.get(image);
-      imageObjectUrls.set(image, objectUrl);
-      image.src = objectUrl;
-      if (previousObjectUrl) URL.revokeObjectURL(previousObjectUrl);
+      const animate =
+        image.dataset.visible === "true" &&
+        !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (animate) {
+        crossfade(image, next);
+      } else {
+        image.src = next;
+      }
     } catch {
       // Keep the endpoint-rendered image as a fallback if fetching fails.
     }
@@ -199,8 +253,23 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   .activity-heatmap {
     display: block;
+    position: relative;
     overflow-x: auto;
     overflow-y: hidden;
+  }
+
+  /* The ghost is created by the crossfade script, so it never gets this
+     component's scope attribute — it has to be targeted globally. */
+  .activity-heatmap :global(.activity-heatmap-ghost) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    transition: opacity var(--crossfade) ease;
+  }
+
+  .activity-heatmap :global(.activity-heatmap-ghost[data-fading="true"]) {
+    opacity: 0;
   }
 
   .activity-heatmap::-webkit-scrollbar {
@@ -255,6 +324,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   @media (prefers-reduced-motion: reduce) {
     .activity-heatmap-image,
+    .activity-heatmap :global(.activity-heatmap-ghost),
     .activity-summary {
       transition: none;
     }

@@ -1,6 +1,6 @@
 <div class="top-artists" data-top-artists>
   <div class="top-artists-header">
-    <h3 class="top-artists-title">top artists</h3>
+    <h3 class="label top-artists-title"><span>top artists</span></h3>
     <div class="period-dropdown" data-period-dropdown>
       <button
         class="period-trigger"
@@ -90,7 +90,8 @@
             link.rel = "noopener noreferrer";
             link.textContent = artist.name;
             count.textContent = `${artist.playcount.toLocaleString()} plays`;
-            item.append(link, count);
+            item.appendChild(link);
+            item.appendChild(count);
             return item;
           }),
         );
@@ -192,18 +193,17 @@
     margin-top: 1.25rem;
   }
 
+  /* Bottom-aligned so the trigger's own border picks up exactly where the
+     label's rule leaves off, reading as one line across the row. */
   .top-artists-header {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
   }
 
   .top-artists-title {
-    color: var(--fg-tertiary);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
+    flex: 1;
   }
 
   .period-dropdown {
@@ -221,6 +221,10 @@
     padding: 0 0.3125rem 0.125rem;
     background: var(--bg);
     border-bottom: 1px solid var(--fg-tertiary);
+    transition:
+      color var(--theme-fade) ease,
+      background-color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease;
   }
 
   .period-menu-viewport {
@@ -242,7 +246,10 @@
     border-top: 0;
     border-radius: 0 0 4px 4px;
     transform: translateY(-100%);
-    transition: transform 0.34s cubic-bezier(0.22, 0.8, 0.25, 1);
+    transition:
+      transform 0.34s cubic-bezier(0.22, 0.8, 0.25, 1),
+      background-color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease;
   }
 
   .period-dropdown[data-open="true"] .period-menu-viewport {
@@ -262,6 +269,9 @@
     text-align: left;
     white-space: nowrap;
     border-radius: 2px;
+    transition:
+      color var(--theme-fade) ease,
+      background-color var(--theme-fade) ease;
   }
 
   .period-menu button:hover {
