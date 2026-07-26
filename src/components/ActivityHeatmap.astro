@@ -241,7 +241,9 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     overflow-y: hidden;
   }
 
-  .activity-heatmap-ghost {
+  /* The ghost is created by the crossfade script, so it never gets this
+     component's scope attribute — it has to be targeted globally. */
+  .activity-heatmap :global(.activity-heatmap-ghost) {
     position: absolute;
     top: 0;
     left: 0;
@@ -249,7 +251,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     transition: opacity 0.22s ease;
   }
 
-  .activity-heatmap-ghost[data-fading="true"] {
+  .activity-heatmap :global(.activity-heatmap-ghost[data-fading="true"]) {
     opacity: 0;
   }
 
@@ -305,7 +307,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   @media (prefers-reduced-motion: reduce) {
     .activity-heatmap-image,
-    .activity-heatmap-ghost,
+    .activity-heatmap :global(.activity-heatmap-ghost),
     .activity-summary {
       transition: none;
     }
