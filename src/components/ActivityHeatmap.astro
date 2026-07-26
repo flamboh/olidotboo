@@ -62,7 +62,11 @@ const totalLabel = source === "github" ? "contributions" : "plays";
   const pageRoot = document.documentElement;
   const svgResponses = new Map<string, Promise<string>>();
   const imageObjectUrls = new WeakMap<HTMLImageElement, string>();
-  const crossfadeDuration = 220;
+  // Read from CSS so the cleanup timing follows --crossfade, including the
+  // dev-only slow-motion override.
+  const crossfadeDuration =
+    parseFloat(getComputedStyle(pageRoot).getPropertyValue("--crossfade")) *
+      1000 || 220;
 
   // The heatmap is an <img>, so a theme switch replaces the whole bitmap at
   // once. Fade the outgoing frame out over the incoming one to match the
@@ -248,7 +252,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     top: 0;
     left: 0;
     pointer-events: none;
-    transition: opacity 0.22s ease;
+    transition: opacity var(--crossfade) ease;
   }
 
   .activity-heatmap :global(.activity-heatmap-ghost[data-fading="true"]) {

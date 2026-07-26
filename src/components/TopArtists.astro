@@ -222,9 +222,9 @@
     background: var(--bg);
     border-bottom: 1px solid var(--fg-tertiary);
     transition:
-      color 0.15s ease,
-      background-color 0.2s ease,
-      border-color 0.2s ease;
+      color var(--theme-fade) ease,
+      background-color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease;
   }
 
   .period-menu-viewport {
@@ -248,8 +248,8 @@
     transform: translateY(-100%);
     transition:
       transform 0.34s cubic-bezier(0.22, 0.8, 0.25, 1),
-      background-color 0.2s ease,
-      border-color 0.2s ease;
+      background-color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease;
   }
 
   .period-dropdown[data-open="true"] .period-menu-viewport {
@@ -270,8 +270,8 @@
     white-space: nowrap;
     border-radius: 2px;
     transition:
-      color 0.15s ease,
-      background-color 0.15s ease;
+      color var(--theme-fade) ease,
+      background-color var(--theme-fade) ease;
   }
 
   .period-menu button:hover {
