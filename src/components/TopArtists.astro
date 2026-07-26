@@ -195,7 +195,7 @@
 
   .top-artists-header {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
   }
@@ -203,7 +203,8 @@
   .top-artists-title {
     flex: 1;
     display: flex;
-    align-items: center;
+    /* Sit the rule on the same line as the dropdown's bottom border. */
+    align-items: flex-end;
     gap: 0.5rem;
     color: var(--fg-tertiary);
     font-size: 0.6875rem;
@@ -281,6 +282,9 @@
     text-align: left;
     white-space: nowrap;
     border-radius: 2px;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
   }
 
   .period-menu button:hover {
