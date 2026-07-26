@@ -156,14 +156,16 @@ const sections = [
         /* Every theme-driven fade reads from these, so dev can slow them all
            at once — see the slow-motion override below. */
         --theme-fade: 0.2s;
-        --crossfade: 0.22s;
+        /* Shorter than --theme-fade to absorb the ~25ms the swapped image
+           spends decoding, so both finish together. */
+        --crossfade: 0.18s;
       }
 
       /* Slow motion for eyeballing the theme transition: add data-slowmo to
          the <html> element in devtools. */
       html[data-slowmo] {
         --theme-fade: 2s;
-        --crossfade: 2.2s;
+        --crossfade: 1.8s;
       }
 
       html[data-theme="dark"] {
