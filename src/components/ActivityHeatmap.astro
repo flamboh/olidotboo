@@ -62,6 +62,23 @@ const totalLabel = source === "github" ? "contributions" : "plays";
   const pageRoot = document.documentElement;
   const svgResponses = new Map<string, Promise<string>>();
   const imageObjectUrls = new WeakMap<HTMLImageElement, string>();
+  const crossfadeDuration = 220;
+
+  // The heatmap is an <img>, so a theme switch replaces the whole bitmap at
+  // once. Fade the outgoing frame out over the incoming one to match the
+  // page's own theme transition.
+  function crossfade(image: HTMLImageElement, nextSrc: string) {
+    const ghost = document.createElement("img");
+    ghost.className = "activity-heatmap-ghost";
+    ghost.src = image.src;
+    ghost.alt = "";
+    ghost.setAttribute("aria-hidden", "true");
+    image.parentElement?.appendChild(ghost);
+
+    image.src = nextSrc;
+    requestAnimationFrame(() => (ghost.dataset.fading = "true"));
+    setTimeout(() => ghost.remove(), crossfadeDuration + 60);
+  }
 
   function getSvg(endpoint: string) {
     const cached = svgResponses.get(endpoint);
@@ -91,8 +108,28 @@ const totalLabel = source === "github" ? "contributions" : "plays";
       );
       const previousObjectUrl = imageObjectUrls.get(image);
       imageObjectUrls.set(image, objectUrl);
-      image.src = objectUrl;
-      if (previousObjectUrl) URL.revokeObjectURL(previousObjectUrl);
+
+      const animate =
+        image.dataset.visible === "true" &&
+        !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (animate) {
+        // Decode first so the swap can't flash an empty frame mid-crossfade.
+        const next = new Image();
+        next.src = objectUrl;
+        await next.decode().catch(() => undefined);
+        if (pageRoot.dataset.theme !== theme) return;
+        crossfade(image, objectUrl);
+      } else {
+        image.src = objectUrl;
+      }
+
+      if (previousObjectUrl) {
+        setTimeout(
+          () => URL.revokeObjectURL(previousObjectUrl),
+          animate ? crossfadeDuration + 60 : 0,
+        );
+      }
     } catch {
       // Keep the endpoint-rendered image as a fallback if fetching fails.
     }
@@ -199,8 +236,21 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   .activity-heatmap {
     display: block;
+    position: relative;
     overflow-x: auto;
     overflow-y: hidden;
+  }
+
+  .activity-heatmap-ghost {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+
+  .activity-heatmap-ghost[data-fading="true"] {
+    opacity: 0;
   }
 
   .activity-heatmap::-webkit-scrollbar {
@@ -255,6 +305,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   @media (prefers-reduced-motion: reduce) {
     .activity-heatmap-image,
+    .activity-heatmap-ghost,
     .activity-summary {
       transition: none;
     }
