@@ -10,7 +10,7 @@ const sections = [
 ];
 ---
 
-<html lang="en" data-slowmo={import.meta.env.DEV ? "" : undefined}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="/favicon.ico" />
@@ -159,8 +159,8 @@ const sections = [
         --crossfade: 0.22s;
       }
 
-      /* Slow motion for eyeballing the theme transition. The attribute is only
-         emitted by the dev server; remove it in devtools to run at speed. */
+      /* Slow motion for eyeballing the theme transition: add data-slowmo to
+         the <html> element in devtools. */
       html[data-slowmo] {
         --theme-fade: 2s;
         --crossfade: 2.2s;
