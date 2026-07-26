@@ -80,7 +80,10 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     image.parentElement?.appendChild(ghost);
 
     image.src = nextSrc;
-    requestAnimationFrame(() => (ghost.dataset.fading = "true"));
+    // Force the ghost's starting opacity to be computed; without this the
+    // browser only ever sees the final value and skips the transition.
+    void getComputedStyle(ghost).opacity;
+    ghost.dataset.fading = "true";
     setTimeout(() => ghost.remove(), crossfadeDuration + 60);
   }
 
