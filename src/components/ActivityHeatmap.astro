@@ -61,7 +61,12 @@ const totalLabel = source === "github" ? "contributions" : "plays";
 
   const pageRoot = document.documentElement;
   const svgResponses = new Map<string, Promise<string>>();
-  const imageObjectUrls = new WeakMap<HTMLImageElement, string>();
+  // Both themed variants per image, built and decoded up front so a theme
+  // switch is a lookup rather than a fetch, a blob and a decode.
+  const themedUrls = new WeakMap<
+    HTMLImageElement,
+    Partial<Record<SvgTheme, string>>
+  >();
   // Read from CSS so the cleanup timing follows --crossfade, including the
   // dev-only slow-motion override.
   const crossfadeDuration =
@@ -99,6 +104,27 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     return request;
   }
 
+  // Both variants are held for the life of the page, so the URLs are never
+  // revoked — two small SVG blobs per heatmap.
+  async function prepareThemes(image: HTMLImageElement, endpoint: string) {
+    const svg = await getSvg(endpoint);
+    const variants = themedUrls.get(image) ?? {};
+    themedUrls.set(image, variants);
+
+    await Promise.all(
+      (["light", "dark"] as SvgTheme[]).map(async (variant) => {
+        if (variants[variant]) return;
+        variants[variant] = URL.createObjectURL(
+          new Blob([applySvgTheme(svg, variant)], { type: "image/svg+xml" }),
+        );
+        // Decode now so the swap can't flash an empty frame later.
+        const preload = new Image();
+        preload.src = variants[variant];
+        await preload.decode().catch(() => undefined);
+      }),
+    );
+  }
+
   async function applyActivityImageTheme(
     image: HTMLImageElement,
     theme: SvgTheme,
@@ -107,35 +133,19 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     if (!endpoint) return;
 
     try {
-      const svg = await getSvg(endpoint);
-      if (pageRoot.dataset.theme !== theme) return;
-
-      const objectUrl = URL.createObjectURL(
-        new Blob([applySvgTheme(svg, theme)], { type: "image/svg+xml" }),
-      );
-      const previousObjectUrl = imageObjectUrls.get(image);
-      imageObjectUrls.set(image, objectUrl);
+      if (!themedUrls.get(image)?.[theme]) await prepareThemes(image, endpoint);
+      const next = themedUrls.get(image)?.[theme];
+      if (!next || pageRoot.dataset.theme !== theme || image.src === next)
+        return;
 
       const animate =
         image.dataset.visible === "true" &&
         !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       if (animate) {
-        // Decode first so the swap can't flash an empty frame mid-crossfade.
-        const next = new Image();
-        next.src = objectUrl;
-        await next.decode().catch(() => undefined);
-        if (pageRoot.dataset.theme !== theme) return;
-        crossfade(image, objectUrl);
+        crossfade(image, next);
       } else {
-        image.src = objectUrl;
-      }
-
-      if (previousObjectUrl) {
-        setTimeout(
-          () => URL.revokeObjectURL(previousObjectUrl),
-          animate ? crossfadeDuration + 60 : 0,
-        );
+        image.src = next;
       }
     } catch {
       // Keep the endpoint-rendered image as a fallback if fetching fails.
