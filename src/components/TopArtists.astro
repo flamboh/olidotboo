@@ -1,6 +1,6 @@
 <div class="top-artists" data-top-artists>
   <div class="top-artists-header">
-    <h3 class="top-artists-title">top artists</h3>
+    <h3 class="label top-artists-title">top artists</h3>
     <div class="period-dropdown" data-period-dropdown>
       <button
         class="period-trigger"
@@ -200,23 +200,10 @@
     gap: 1rem;
   }
 
+  /* Typography and the trailing rule come from the global .label; the header
+     lays it out against the dropdown, whose bottom border it lines up with. */
   .top-artists-title {
     flex: 1;
-    display: flex;
-    /* Sit the rule on the same line as the dropdown's bottom border. */
-    align-items: flex-end;
-    gap: 0.5rem;
-    color: var(--fg-tertiary);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-  }
-
-  .top-artists-title::after {
-    content: "";
-    flex: 1;
-    border-top: 1px solid var(--border);
-    transition: border-color 0.2s ease;
   }
 
   .period-dropdown {
