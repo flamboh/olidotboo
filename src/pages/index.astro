@@ -5,8 +5,8 @@ import TopArtists from "@/components/TopArtists.astro";
 import { email, experience, projects, socials } from "@/data";
 
 const sections = [
-  { id: "experience", label: "experience", entries: experience },
-  { id: "projects", label: "projects", entries: projects },
+  { id: "experience", label: "what i do", entries: experience },
+  { id: "projects", label: "things i made", entries: projects },
 ];
 ---
 
@@ -87,7 +87,7 @@ const sections = [
       </div>
 
       <section aria-labelledby="activity-label">
-        <h2 class="label" id="activity-label">activity</h2>
+        <h2 class="label" id="activity-label">streaks</h2>
         <GithubGraph />
         <LastfmHeatmap />
         <TopArtists />
@@ -297,18 +297,20 @@ const sections = [
         margin-top: 2.5rem;
       }
 
-      #activity-label {
-        border-bottom: 1px solid var(--border);
-      }
-
       .label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         font-size: 0.6875rem;
         font-weight: 500;
         letter-spacing: 0.14em;
-        text-transform: uppercase;
         color: var(--fg-tertiary);
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.375rem;
+      }
+
+      .label::after {
+        content: "";
+        flex: 1;
+        border-top: 1px solid var(--border);
       }
 
       .row {
