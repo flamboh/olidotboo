@@ -193,20 +193,17 @@
     margin-top: 1.25rem;
   }
 
-  /* The rule runs under the whole row, dropdown included, so it carries the
-     border instead of the label and the trigger. */
+  /* Bottom-aligned so the trigger's own border picks up exactly where the
+     label's rule leaves off, reading as one line across the row. */
   .top-artists-header {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
-    border-bottom: 1px solid var(--border);
-    transition: border-color 0.2s ease;
   }
 
   .top-artists-title {
-    padding-bottom: 0;
-    border-bottom: 0;
+    flex: 1;
   }
 
   .period-dropdown {
@@ -221,10 +218,9 @@
     display: flex;
     align-items: center;
     width: 100%;
-    /* Bottom padding lands the trigger's edge on the header's rule, so the
-       dropdown menu still opens flush against it. */
-    padding: 0 0.3125rem 0.375rem;
+    padding: 0 0.3125rem 0.125rem;
     background: var(--bg);
+    border-bottom: 1px solid var(--fg-tertiary);
     transition:
       color 0.15s ease,
       background-color 0.2s ease,
