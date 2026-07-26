@@ -58,7 +58,7 @@ const sections = [
           sections.map((section) => (
             <section class={section.id} aria-labelledby={`${section.id}-label`}>
               <h2 class="label" id={`${section.id}-label`}>
-                {section.label}
+                <span>{section.label}</span>
               </h2>
               {section.entries.map((entry) => (
                 <article class="row">
@@ -87,7 +87,7 @@ const sections = [
       </div>
 
       <section aria-labelledby="activity-label">
-        <h2 class="label" id="activity-label">streaks</h2>
+        <h2 class="label" id="activity-label"><span>streaks</span></h2>
         <GithubGraph />
         <LastfmHeatmap />
         <TopArtists />
@@ -305,6 +305,12 @@ const sections = [
         font-weight: 500;
         letter-spacing: 0.14em;
         color: var(--fg-tertiary);
+      }
+
+      /* The label's own underline, broken from the rule that follows it. */
+      .label > span {
+        border-bottom: 1px solid var(--border);
+        transition: border-color 0.2s ease;
       }
 
       .label::after {
