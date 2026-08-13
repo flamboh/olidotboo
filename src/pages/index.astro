@@ -60,27 +60,29 @@ const sections = [
               <h2 class="label" id={`${section.id}-label`}>
                 {section.label}
               </h2>
-              {section.entries.map((entry) => (
-                <article class="row">
-                  <h3>
-                    {entry.href ? (
-                      <a
-                        href={entry.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {entry.title}
-                      </a>
-                    ) : (
-                      entry.title
-                    )}
-                    {entry.subtitle && (
-                      <span class="subtitle">{entry.subtitle}</span>
-                    )}
-                  </h3>
-                  <p class="description">{entry.description}</p>
-                </article>
-              ))}
+              <div class="rows">
+                {section.entries.map((entry) => (
+                  <article class="row">
+                    <h3>
+                      {entry.href ? (
+                        <a
+                          href={entry.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {entry.title}
+                        </a>
+                      ) : (
+                        entry.title
+                      )}
+                      {entry.subtitle && (
+                        <span class="subtitle">{entry.subtitle}</span>
+                      )}
+                    </h3>
+                    <p class="description">{entry.description}</p>
+                  </article>
+                ))}
+              </div>
             </section>
           ))
         }
@@ -318,8 +320,23 @@ const sections = [
         transition: border-color var(--theme-fade) ease;
       }
 
-      .row {
-        margin-top: 1.125rem;
+      /* Each column stretches to the tallest one. space-between pins the
+         first and last entry, so both columns share a top and bottom line
+         and only the gaps between entries absorb the difference. */
+      .content-grid > section {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .rows {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        /* Floor for the spacing: the tallest column has no slack to
+           distribute, and every column collapses to one on mobile. */
+        gap: 1.125rem;
+        padding-top: 1.125rem;
       }
 
       h3 {

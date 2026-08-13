@@ -51,4 +51,9 @@ export const projects: Entry[] = [
     href: "https://thestoning.net",
     description: "music publication for album listening club.",
   },
+  {
+    title: "pland",
+    href: "https://github.com/flamboh/pland",
+    description: "a rust cli that lets coding agents publish sites instantly.",
+  },
 ];
