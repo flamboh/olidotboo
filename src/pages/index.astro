@@ -320,9 +320,9 @@ const sections = [
         transition: border-color var(--theme-fade) ease;
       }
 
-      /* Each column stretches to the tallest one, so the entries distribute
-         into the leftover space. A short list then reads as intentional
-         beside a longer one instead of stopping early. */
+      /* Each column stretches to the tallest one. space-between pins the
+         first and last entry, so both columns share a top and bottom line
+         and only the gaps between entries absorb the difference. */
       .content-grid > section {
         display: flex;
         flex-direction: column;
@@ -332,7 +332,7 @@ const sections = [
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: space-evenly;
+        justify-content: space-between;
         /* Floor for the spacing: the tallest column has no slack to
            distribute, and every column collapses to one on mobile. */
         gap: 1.125rem;
