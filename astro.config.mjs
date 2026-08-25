@@ -1,7 +1,7 @@
 // @ts-check
 import cloudflare from "@astrojs/cloudflare";
+import stylex from "@stylexjs/unplugin";
 import { defineConfig, envField } from "astro/config";
-import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,6 +12,6 @@ export default defineConfig({
     },
   },
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [stylex.vite({ useCSSLayers: true })],
   },
 });

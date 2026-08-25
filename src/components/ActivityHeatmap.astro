@@ -1,4 +1,8 @@
 ---
+import * as stylex from "@stylexjs/stylex";
+
+import { styles } from "@/styles/activity-heatmap.stylex";
+
 interface Props {
   username: string;
   source: "github" | "lastfm";
@@ -21,19 +25,19 @@ const endpoint = `https://heat.oli.boo/${source}/${encodedUsername}`;
 const totalLabel = source === "github" ? "contributions" : "plays";
 ---
 
-<div class:list={["activity-source", { "activity-source--spaced": spaced }]}>
-  <h3 class="activity-source-label">
+<div {...stylex.attrs(styles.source, spaced && styles.sourceSpaced)}>
+  <h3 {...stylex.attrs(styles.sourceLabel)}>
     {source === "github" ? "github" : "last.fm"}
   </h3>
   <a
-    class="activity-heatmap"
+    {...stylex.attrs(styles.heatmap)}
     href={profileUrl}
     target="_blank"
     rel="noopener noreferrer"
     aria-label={`${username}'s ${source === "github" ? "GitHub" : "Last.fm"} profile`}
   >
     <img
-      class="activity-heatmap-image"
+      {...stylex.attrs(styles.imageFrame, styles.image)}
       src={`${endpoint}?display=minimal`}
       {alt}
       loading="lazy"
@@ -41,15 +45,19 @@ const totalLabel = source === "github" ? "contributions" : "plays";
       height="88"
       data-activity-image
       data-theme-endpoint={`${endpoint}?display=minimal`}
+      data-visible-class={stylex.attrs(styles.imageVisible).class}
+      data-ghost-class={stylex.attrs(styles.imageFrame, styles.ghost).class}
+      data-ghost-fading-class={stylex.attrs(styles.ghostFading).class}
     />
   </a>
   <p
-    class="activity-summary"
+    {...stylex.attrs(styles.summary)}
     data-activity-summary
     data-streak-endpoint={`${endpoint}/streak`}
     data-total-endpoint={`${endpoint}/total`}
     data-streak-label={streakLabel}
     data-total-label={totalLabel}
+    data-visible-class={stylex.attrs(styles.summaryVisible).class}
     aria-live="polite"
     aria-atomic="true"
   >
@@ -73,12 +81,17 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     parseFloat(getComputedStyle(pageRoot).getPropertyValue("--crossfade")) *
       1000 || 220;
 
+  function addGeneratedClasses(element: Element, classNames?: string) {
+    const classes = classNames?.split(/\s+/).filter(Boolean);
+    if (classes && classes.length > 0) element.classList.add(...classes);
+  }
+
   // The heatmap is an <img>, so a theme switch replaces the whole bitmap at
   // once. Fade the outgoing frame out over the incoming one to match the
   // page's own theme transition.
   function crossfade(image: HTMLImageElement, nextSrc: string) {
     const ghost = document.createElement("img");
-    ghost.className = "activity-heatmap-ghost";
+    addGeneratedClasses(ghost, image.dataset.ghostClass);
     ghost.src = image.src;
     ghost.alt = "";
     ghost.setAttribute("aria-hidden", "true");
@@ -88,6 +101,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
     // Force the ghost's starting opacity to be computed; without this the
     // browser only ever sees the final value and skips the transition.
     void getComputedStyle(ghost).opacity;
+    addGeneratedClasses(ghost, image.dataset.ghostFadingClass);
     ghost.dataset.fading = "true";
     setTimeout(() => ghost.remove(), crossfadeDuration + 60);
   }
@@ -170,7 +184,10 @@ const totalLabel = source === "github" ? "contributions" : "plays";
   document
     .querySelectorAll<HTMLImageElement>("[data-activity-image]")
     .forEach((image) => {
-      const reveal = () => (image.dataset.visible = "true");
+      const reveal = () => {
+        image.dataset.visible = "true";
+        addGeneratedClasses(image, image.dataset.visibleClass);
+      };
       if (image.complete && image.naturalWidth > 0) {
         reveal();
       } else {
@@ -230,109 +247,7 @@ const totalLabel = source === "github" ? "contributions" : "plays";
       if (parts.length > 0) {
         element.textContent = parts.join(" · ");
         element.dataset.visible = "true";
+        addGeneratedClasses(element, element.dataset.visibleClass);
       }
     });
 </script>
-
-<style>
-  .activity-source {
-    margin-top: 1rem;
-  }
-
-  .activity-source--spaced {
-    margin-top: 1.25rem;
-  }
-
-  .activity-source-label {
-    margin-bottom: 0.375rem;
-    color: var(--fg-tertiary);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-  }
-
-  .activity-heatmap {
-    display: block;
-    position: relative;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  /* The ghost is created by the crossfade script, so it never gets this
-     component's scope attribute — it has to be targeted globally. */
-  .activity-heatmap :global(.activity-heatmap-ghost) {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    transition: opacity var(--crossfade) ease;
-  }
-
-  .activity-heatmap :global(.activity-heatmap-ghost[data-fading="true"]) {
-    opacity: 0;
-  }
-
-  .activity-heatmap::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .activity-heatmap::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .activity-heatmap::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
-  }
-
-  .activity-heatmap::-webkit-scrollbar-thumb:hover {
-    background: var(--fg-tertiary);
-  }
-
-  .activity-heatmap img {
-    display: block;
-    width: 686px;
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-  }
-
-  .activity-heatmap-image {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .activity-heatmap-image[data-visible="true"] {
-    opacity: 1;
-  }
-
-  .activity-summary {
-    margin-top: 0.375rem;
-    min-height: 1.65em;
-    color: var(--fg-tertiary);
-    font-size: 0.75rem;
-    line-height: 1.65;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.18s ease;
-  }
-
-  .activity-summary[data-visible="true"] {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .activity-heatmap-image,
-    .activity-heatmap :global(.activity-heatmap-ghost),
-    .activity-summary {
-      transition: none;
-    }
-  }
-
-  @media (max-width: 520px) {
-    .activity-summary {
-      min-height: 3.3em;
-    }
-  }
-</style>

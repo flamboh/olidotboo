@@ -1,16 +1,32 @@
 ---
+import * as stylex from "@stylexjs/stylex";
+
 import GithubGraph from "@/components/GithubGraph.astro";
 import LastfmHeatmap from "@/components/LastfmHeatmap.astro";
 import TopArtists from "@/components/TopArtists.astro";
 import { email, experience, projects, socials } from "@/data";
+import "../styles/global.css";
+import { darkTheme, lightTheme } from "../styles/theme.stylex";
+import { styles } from "../styles/page.stylex";
 
 const sections = [
   { id: "experience", label: "what i do", entries: experience },
   { id: "projects", label: "things i made", entries: projects },
 ];
+
+const lightThemeClass =
+  stylex.attrs(lightTheme, styles.lightScheme).class ?? "";
+const darkThemeClass = stylex.attrs(darkTheme, styles.darkScheme).class ?? "";
+const isDev = import.meta.env.DEV;
 ---
 
-<html lang="en">
+<html
+  lang="en"
+  {...stylex.attrs(lightTheme, styles.lightScheme)}
+  data-theme="light"
+  data-light-theme-class={lightThemeClass}
+  data-dark-theme-class={darkThemeClass}
+>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="/favicon.ico" />
@@ -21,26 +37,61 @@ const sections = [
       content="oliver boorstein — researcher, music lover, cs + data science @ uoregon"
     />
     <title>oliboo</title>
+    {isDev && <link rel="stylesheet" href="/virtual:stylex.css" />}
     <script is:inline>
-      const stored = localStorage.getItem("theme");
-      document.documentElement.dataset.theme =
-        stored ??
-        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      (() => {
+        const root = document.documentElement;
+        const stored = localStorage.getItem("theme");
+        const theme =
+          stored === "dark" || stored === "light"
+            ? stored
+            : matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
+        function applyTheme(next) {
+          root.dataset.theme = next;
+          const themeClasses = [
+            root.dataset.lightThemeClass,
+            root.dataset.darkThemeClass,
+          ]
+            .flatMap((value) => value?.split(/\s+/) ?? [])
+            .filter(Boolean);
+          const nextClasses = (
+            next === "dark"
+              ? root.dataset.darkThemeClass
+              : root.dataset.lightThemeClass
+          )
+            ?.split(/\s+/)
+            .filter(Boolean);
+
+          root.classList.remove(...themeClasses);
+          root.classList.add(...(nextClasses ?? []));
+        }
+
+        applyTheme(theme);
+      })();
     </script>
   </head>
-  <body>
-    <main>
-      <header class="masthead">
+  <body {...stylex.attrs(styles.body)}>
+    <main {...stylex.attrs(styles.main)}>
+      <header {...stylex.attrs(styles.masthead, styles.enter)}>
         <div>
-          <h1>
-            oliver boorstein <span class="pronouns">he/they</span>
+          <h1 {...stylex.attrs(styles.heading)}>
+            oliver boorstein <span {...stylex.attrs(styles.pronouns)}
+              >he/they</span
+            >
           </h1>
-          <p class="tagline">
+          <p {...stylex.attrs(styles.tagline)}>
             researcher, full-stack dev & track listener — cs + data science @
             uoregon
           </p>
           <button
-            class="contact-line"
+            {...stylex.attrs(
+              styles.button,
+              styles.contactLine,
+              styles.focusable,
+            )}
             type="button"
             data-copy-email
             data-email={email}
@@ -48,24 +99,36 @@ const sections = [
             contact me: {email}
           </button>
         </div>
-        <button type="button" data-theme-toggle aria-label="switch theme">
+        <button
+          {...stylex.attrs(styles.button, styles.focusable)}
+          type="button"
+          data-theme-toggle
+          aria-label="switch theme"
+        >
           [dark]
         </button>
       </header>
 
-      <div class="content-grid">
+      <div
+        {...stylex.attrs(styles.contentGrid, styles.enter, styles.enterContent)}
+      >
         {
           sections.map((section) => (
-            <section class={section.id} aria-labelledby={`${section.id}-label`}>
-              <h2 class="label" id={`${section.id}-label`}>
+            <section
+              {...stylex.attrs(styles.contentColumn)}
+              data-section={section.id}
+              aria-labelledby={`${section.id}-label`}
+            >
+              <h2 {...stylex.attrs(styles.label)} id={`${section.id}-label`}>
                 {section.label}
               </h2>
-              <div class="rows">
+              <div {...stylex.attrs(styles.rows)}>
                 {section.entries.map((entry) => (
-                  <article class="row">
-                    <h3>
+                  <article>
+                    <h3 {...stylex.attrs(styles.subheading)}>
                       {entry.href ? (
                         <a
+                          {...stylex.attrs(styles.link, styles.focusable)}
                           href={entry.href}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -76,10 +139,20 @@ const sections = [
                         entry.title
                       )}
                       {entry.subtitle && (
-                        <span class="subtitle">{entry.subtitle}</span>
+                        <span
+                          {...stylex.attrs(
+                            styles.subtitle,
+                            section.id === "experience" &&
+                              styles.experienceSubtitle,
+                          )}
+                        >
+                          {entry.subtitle}
+                        </span>
                       )}
                     </h3>
-                    <p class="description">{entry.description}</p>
+                    <p {...stylex.attrs(styles.description)}>
+                      {entry.description}
+                    </p>
                   </article>
                 ))}
               </div>
@@ -88,17 +161,27 @@ const sections = [
         }
       </div>
 
-      <section aria-labelledby="activity-label">
-        <h2 class="label" id="activity-label">streaks</h2>
+      <section
+        {...stylex.attrs(styles.activity, styles.enter, styles.enterActivity)}
+        aria-labelledby="activity-label"
+      >
+        <h2 {...stylex.attrs(styles.label)} id="activity-label">streaks</h2>
         <GithubGraph />
         <LastfmHeatmap />
         <TopArtists />
       </section>
 
-      <footer>
+      <footer
+        {...stylex.attrs(styles.footer, styles.enter, styles.enterFooter)}
+      >
         {
           socials.map((social) => (
             <a
+              {...stylex.attrs(
+                styles.link,
+                styles.footerLink,
+                styles.focusable,
+              )}
               href={social.href}
               target={social.href.startsWith("/") ? undefined : "_blank"}
               rel="noopener noreferrer"
@@ -111,10 +194,34 @@ const sections = [
     </main>
 
     <script>
+      if (import.meta.env.DEV) {
+        void import("virtual:stylex:runtime");
+      }
+
       const root = document.documentElement;
       const toggle = document.querySelector<HTMLButtonElement>(
         "[data-theme-toggle]",
       );
+
+      function applyTheme(next: "light" | "dark") {
+        root.dataset.theme = next;
+        const themeClasses = [
+          root.dataset.lightThemeClass,
+          root.dataset.darkThemeClass,
+        ]
+          .flatMap((value) => value?.split(/\s+/) ?? [])
+          .filter(Boolean);
+        const nextClasses = (
+          next === "dark"
+            ? root.dataset.darkThemeClass
+            : root.dataset.lightThemeClass
+        )
+          ?.split(/\s+/)
+          .filter(Boolean);
+
+        root.classList.remove(...themeClasses);
+        root.classList.add(...(nextClasses ?? []));
+      }
 
       function syncToggle() {
         if (!toggle) return;
@@ -125,7 +232,7 @@ const sections = [
 
       toggle?.addEventListener("click", () => {
         const next = root.dataset.theme === "dark" ? "light" : "dark";
-        root.dataset.theme = next;
+        applyTheme(next);
         localStorage.setItem("theme", next);
         syncToggle();
       });
@@ -145,264 +252,5 @@ const sections = [
         setTimeout(() => (copyButton.textContent = copyLabel), 1600);
       });
     </script>
-
-    <style is:global>
-      :root {
-        color-scheme: light;
-        --bg: #fafafa;
-        --fg: #111111;
-        --fg-secondary: #616161;
-        --fg-tertiary: #9e9e9e;
-        --border: #e2e2e2;
-        --accent: #15803d;
-        /* Every theme-driven fade reads from these, so dev can slow them all
-           at once — see the slow-motion override below. */
-        --theme-fade: 0.2s;
-        --crossfade: 0.2s;
-      }
-
-      /* Slow motion for eyeballing the theme transition: add data-slowmo to
-         the <html> element in devtools. */
-      html[data-slowmo] {
-        --theme-fade: 2s;
-        --crossfade: 2s;
-      }
-
-      html[data-theme="dark"] {
-        color-scheme: dark;
-        --bg: #000000;
-        --fg: #ededed;
-        --fg-secondary: #8f8f8f;
-        --fg-tertiary: #5c5c5c;
-        --border: #1e1e1e;
-        --accent: #4ade80;
-      }
-
-      * {
-        margin: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        background: var(--bg);
-        color: var(--fg);
-        font-family:
-          ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
-          "Liberation Mono", monospace;
-        font-size: 0.875rem;
-        line-height: 1.65;
-        -webkit-font-smoothing: antialiased;
-        transition:
-          background-color var(--theme-fade) ease,
-          color var(--theme-fade) ease;
-      }
-
-      main {
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 3.25rem 1.25rem 3.75rem;
-      }
-
-      main > .masthead,
-      main > .content-grid,
-      main > section[aria-labelledby="activity-label"],
-      main > footer {
-        animation: page-enter 0.48s cubic-bezier(0.22, 0.8, 0.25, 1) both;
-      }
-
-      main > .content-grid {
-        animation-delay: 0.05s;
-      }
-
-      main > section[aria-labelledby="activity-label"] {
-        animation-delay: 0.1s;
-      }
-
-      main > footer {
-        animation-delay: 0.15s;
-      }
-
-      @keyframes page-enter {
-        from {
-          opacity: 0;
-          transform: translateY(7px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      a {
-        color: var(--fg);
-        text-decoration: underline;
-        text-decoration-color: var(--fg-tertiary);
-        text-underline-offset: 3px;
-        transition: var(--theme-fade) ease;
-        transition-property: color, text-decoration-color;
-      }
-
-      a:hover {
-        color: var(--accent);
-        text-decoration-color: var(--accent);
-      }
-
-      :focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
-        border-radius: 2px;
-      }
-
-      .masthead {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-      }
-
-      h1 {
-        font-size: 1rem;
-        font-weight: 700;
-      }
-
-      .pronouns {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: var(--fg-tertiary);
-      }
-
-      .tagline {
-        margin-top: 0.375rem;
-        color: var(--fg-secondary);
-        text-wrap: balance;
-      }
-
-      .contact-line {
-        display: block;
-        margin-top: 0.125rem;
-        color: var(--fg-tertiary);
-        font-size: 0.8125rem;
-      }
-
-      button {
-        font: inherit;
-        color: var(--fg-secondary);
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: color var(--theme-fade) ease;
-      }
-
-      button:hover {
-        color: var(--accent);
-      }
-
-      .content-grid {
-        margin-top: 1.75rem;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 2rem;
-      }
-
-      section[aria-labelledby="activity-label"] {
-        margin-top: 2.5rem;
-      }
-
-      .label {
-        font-size: 0.6875rem;
-        font-weight: 500;
-        letter-spacing: 0.14em;
-        color: var(--fg-tertiary);
-        padding-bottom: 0.375rem;
-        border-bottom: 1px solid var(--border);
-        transition: border-color var(--theme-fade) ease;
-      }
-
-      /* Each column stretches to the tallest one. space-between pins the
-         first and last entry, so both columns share a top and bottom line
-         and only the gaps between entries absorb the difference. */
-      .content-grid > section {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .rows {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        /* Floor for the spacing: the tallest column has no slack to
-           distribute, and every column collapses to one on mobile. */
-        gap: 1.125rem;
-        padding-top: 1.125rem;
-      }
-
-      h3 {
-        font-size: 0.875rem;
-        font-weight: 600;
-      }
-
-      .subtitle {
-        font-weight: 400;
-        color: var(--fg-secondary);
-      }
-
-      .experience .subtitle {
-        display: block;
-      }
-
-      .description {
-        margin-top: 0.25rem;
-        font-size: 0.8125rem;
-        color: var(--fg-secondary);
-        text-wrap: pretty;
-      }
-
-      footer {
-        margin-top: 1.75rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border);
-        transition: border-color var(--theme-fade) ease;
-        display: flex;
-        flex-wrap: wrap;
-        column-gap: 1.25rem;
-        row-gap: 0.5rem;
-        font-size: 0.8125rem;
-      }
-
-      footer a,
-      footer button {
-        color: var(--fg-secondary);
-        text-decoration: none;
-      }
-
-      footer a:hover,
-      footer button:hover {
-        color: var(--accent);
-      }
-
-      @media (max-width: 640px) {
-        main {
-          padding-top: 2rem;
-          padding-bottom: 3rem;
-        }
-
-        .content-grid {
-          grid-template-columns: 1fr;
-          gap: 2.75rem;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        main > .masthead,
-        main > .content-grid,
-        main > section[aria-labelledby="activity-label"],
-        main > footer {
-          animation: none;
-        }
-      }
-    </style>
   </body>
 </html>

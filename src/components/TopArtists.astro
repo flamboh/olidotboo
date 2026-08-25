@@ -1,9 +1,21 @@
-<div class="top-artists" data-top-artists>
-  <div class="top-artists-header">
-    <h3 class="label top-artists-title"><span>top artists</span></h3>
-    <div class="period-dropdown" data-period-dropdown>
+---
+import * as stylex from "@stylexjs/stylex";
+
+import { styles } from "../styles/top-artists.stylex";
+---
+
+<div
+  {...stylex.attrs(styles.root)}
+  data-top-artists
+  data-artist-item-class={stylex.attrs(styles.artistItem).class}
+  data-artist-name-class={stylex.attrs(styles.artistName).class}
+  data-artist-count-class={stylex.attrs(styles.artistCount).class}
+>
+  <div {...stylex.attrs(styles.header)}>
+    <h3 {...stylex.attrs(styles.title)}><span>top artists</span></h3>
+    <div {...stylex.attrs(styles.dropdown)} data-period-dropdown>
       <button
-        class="period-trigger"
+        {...stylex.attrs(styles.trigger)}
         type="button"
         aria-expanded="false"
         aria-controls="top-artist-periods"
@@ -11,15 +23,22 @@
       >
         <span data-period-label>180 days</span>
       </button>
-      <div class="period-menu-viewport">
+      <div
+        {...stylex.attrs(styles.viewport)}
+        data-period-menu-viewport
+        data-open="false"
+      >
         <div
-          class="period-menu"
+          {...stylex.attrs(styles.menu)}
           id="top-artist-periods"
           aria-label="Time period"
+          data-period-menu
+          data-open="false"
         >
           {
             [30, 90, 180].map((days) => (
               <button
+                {...stylex.attrs(styles.option)}
                 type="button"
                 data-period={days}
                 aria-current={days === 180 ? "true" : undefined}
@@ -33,9 +52,21 @@
     </div>
   </div>
 
-  <div class="artists-content">
-    <ol aria-live="polite" aria-busy="true" data-artist-list></ol>
-    <p class="artist-status" role="status" data-artist-status>loading…</p>
+  <div
+    {...stylex.attrs(styles.content)}
+    data-artists-content
+    data-changing="false"
+  >
+    <ol
+      {...stylex.attrs(styles.list)}
+      aria-live="polite"
+      aria-busy="true"
+      data-artist-list
+    >
+    </ol>
+    <p {...stylex.attrs(styles.status)} role="status" data-artist-status>
+      loading…
+    </p>
   </div>
 </div>
 
@@ -60,8 +91,17 @@
       const periodLabel = root.querySelector<HTMLElement>(
         "[data-period-label]",
       );
-      const content = root.querySelector<HTMLElement>(".artists-content");
+      const content = root.querySelector<HTMLElement>("[data-artists-content]");
+      const viewport = root.querySelector<HTMLElement>(
+        "[data-period-menu-viewport]",
+      );
+      const menu = root.querySelector<HTMLElement>("[data-period-menu]");
       const buttons = root.querySelectorAll<HTMLButtonElement>("[data-period]");
+      const artistClasses = {
+        item: root.dataset.artistItemClass ?? "",
+        name: root.dataset.artistNameClass ?? "",
+        count: root.dataset.artistCountClass ?? "",
+      };
       const loaded = new Map<string, Artist[]>();
       const transitionDuration = matchMedia("(prefers-reduced-motion: reduce)")
         .matches
@@ -72,6 +112,8 @@
       function setDropdownOpen(open: boolean) {
         if (!dropdown || !trigger) return;
         dropdown.dataset.open = String(open);
+        if (viewport) viewport.dataset.open = String(open);
+        if (menu) menu.dataset.open = String(open);
         trigger.setAttribute("aria-expanded", String(open));
       }
 
@@ -82,9 +124,11 @@
             const item = document.createElement("li");
             const link = document.createElement("a");
             const count = document.createElement("span");
-            item.className = "artist-item";
-            link.className = "artist-name";
-            count.className = "artist-count";
+            // StyleX can combine several atomic classes, so assign the full
+            // generated string instead of passing it to classList.add().
+            item.className = artistClasses.item;
+            link.className = artistClasses.name;
+            count.className = artistClasses.count;
             link.href = artist.url;
             link.target = "_blank";
             link.rel = "noopener noreferrer";
@@ -101,12 +145,12 @@
 
       async function fadeOutContent() {
         if (!content || transitionDuration === 0) return;
-        content.classList.add("is-changing");
+        content.dataset.changing = "true";
         await new Promise((resolve) => setTimeout(resolve, transitionDuration));
       }
 
       function fadeInContent() {
-        content?.classList.remove("is-changing");
+        if (content) content.dataset.changing = "false";
       }
 
       async function selectPeriod(period: string) {
@@ -187,146 +231,3 @@
       void selectPeriod("180");
     });
 </script>
-
-<style>
-  .top-artists {
-    margin-top: 1.25rem;
-  }
-
-  /* Bottom-aligned so the trigger's own border picks up exactly where the
-     label's rule leaves off, reading as one line across the row. */
-  .top-artists-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .top-artists-title {
-    flex: 1;
-  }
-
-  .period-dropdown {
-    position: relative;
-    width: calc(8ch + 0.625rem);
-    font-size: 0.75rem;
-  }
-
-  .period-trigger {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 0 0.3125rem 0.125rem;
-    background: var(--bg);
-    border-bottom: 1px solid var(--fg-tertiary);
-    transition:
-      color var(--theme-fade) ease,
-      background-color var(--theme-fade) ease,
-      border-color var(--theme-fade) ease;
-  }
-
-  .period-menu-viewport {
-    position: absolute;
-    z-index: 2;
-    top: calc(100% - 1px);
-    right: -1px;
-    width: calc(100% + 2px);
-    height: 6rem;
-    overflow: hidden;
-    pointer-events: none;
-    visibility: hidden;
-    transition: visibility 0s linear 0.34s;
-  }
-
-  .period-menu {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-top: 0;
-    border-radius: 0 0 4px 4px;
-    transform: translateY(-100%);
-    transition:
-      transform 0.34s cubic-bezier(0.22, 0.8, 0.25, 1),
-      background-color var(--theme-fade) ease,
-      border-color var(--theme-fade) ease;
-  }
-
-  .period-dropdown[data-open="true"] .period-menu-viewport {
-    visibility: visible;
-    pointer-events: auto;
-    transition-delay: 0s;
-  }
-
-  .period-dropdown[data-open="true"] .period-menu {
-    transform: translateY(0);
-  }
-
-  .period-menu button {
-    display: block;
-    width: 100%;
-    padding: 0.25rem;
-    text-align: left;
-    white-space: nowrap;
-    border-radius: 2px;
-    transition:
-      color var(--theme-fade) ease,
-      background-color var(--theme-fade) ease;
-  }
-
-  .period-menu button:hover {
-    background: var(--border);
-  }
-
-  .period-menu button[aria-current="true"] {
-    color: var(--fg);
-  }
-
-  .artists-content {
-    display: grid;
-    min-height: 6.5rem;
-    margin-top: 0.625rem;
-    transition: opacity 0.18s ease;
-  }
-
-  .artists-content.is-changing {
-    opacity: 0;
-  }
-
-  ol {
-    grid-area: 1 / 1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.875rem 2rem;
-    list-style: none;
-  }
-
-  .top-artists :global(.artist-item) {
-    min-width: 0;
-  }
-
-  .top-artists :global(.artist-name),
-  .top-artists :global(.artist-count) {
-    display: block;
-  }
-
-  .top-artists :global(.artist-count) {
-    margin-top: 0.125rem;
-    color: var(--fg-tertiary);
-    font-size: 0.75rem;
-  }
-
-  .artist-status {
-    grid-area: 1 / 1;
-    place-self: center;
-    color: var(--fg-tertiary);
-    font-size: 0.75rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .period-menu,
-    .artists-content {
-      transition: none;
-    }
-  }
-</style>
