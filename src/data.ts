@@ -16,6 +16,13 @@ export interface Entry {
 
 export const experience: Entry[] = [
   {
+    title: "t3 code",
+    subtitle: "contributor",
+    href: "https://github.com/pingdotgg/t3code",
+    description:
+      "frontend and bug squashing for the best agentic development environment.",
+  },
+  {
     title: "quackhacks",
     subtitle: "software engineer",
     href: "https://2026.quackhacks.org/",
@@ -26,12 +33,6 @@ export const experience: Entry[] = [
     subtitle: "undergraduate researcher",
     href: "https://onrg.gitlab.io/",
     description: "researching large-scale network telemetry.",
-  },
-  {
-    title: "album listening club",
-    subtitle: "co-president",
-    href: "https://www.instagram.com/uoalbumclub",
-    description: "leading one of oregon's greatest student orgs.",
   },
 ];
 
