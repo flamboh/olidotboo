@@ -18,7 +18,7 @@ export const experience: Entry[] = [
   {
     title: "t3 code",
     subtitle: "contributor",
-    href: "https://t3.codes/",
+    href: "https://github.com/pingdotgg/t3code",
     description:
       "frontend and bug-hunting for the best agentic development environment.",
   },
