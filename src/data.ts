@@ -20,7 +20,7 @@ export const experience: Entry[] = [
     subtitle: "contributor",
     href: "https://github.com/pingdotgg/t3code",
     description:
-      "frontend and bug squashing for the best agentic development environment.",
+      "maximizing comfort for the best agentic development environment.",
   },
   {
     title: "quackhacks",
