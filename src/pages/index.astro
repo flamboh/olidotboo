@@ -32,8 +32,10 @@ const sections = [
 
       const root = document.documentElement;
       const rootStyle = getComputedStyle(root);
-      const heading = rootStyle.getPropertyValue("--font-chillax");
-      const body = rootStyle.getPropertyValue("--font-azeret-mono");
+      const primaryFamily = (cssVariable) =>
+        rootStyle.getPropertyValue(cssVariable).split(",")[0];
+      const heading = primaryFamily("--font-chillax");
+      const body = primaryFamily("--font-azeret-mono");
       const reveal = () => root.classList.remove("fonts-loading");
       root.classList.add("fonts-loading");
       Promise.all([
@@ -41,7 +43,7 @@ const sections = [
         document.fonts.load(`700 1em ${heading}`),
         document.fonts.load(`400 1em ${body}`),
       ]).finally(reveal);
-      setTimeout(reveal, 400);
+      setTimeout(reveal, 800);
     </script>
   </head>
   <body>
