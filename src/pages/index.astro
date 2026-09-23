@@ -141,10 +141,23 @@ const sections = [
         toggle.setAttribute("aria-label", `switch to ${next} theme`);
       }
 
+      const systemDark = matchMedia("(prefers-color-scheme: dark)");
+      const systemTheme = () => (systemDark.matches ? "dark" : "light");
+
       toggle?.addEventListener("click", () => {
         const next = root.dataset.theme === "dark" ? "light" : "dark";
         root.dataset.theme = next;
-        localStorage.setItem("theme", next);
+        if (next === systemTheme()) {
+          localStorage.removeItem("theme");
+        } else {
+          localStorage.setItem("theme", next);
+        }
+        syncToggle();
+      });
+
+      systemDark.addEventListener("change", () => {
+        if (localStorage.getItem("theme")) return;
+        root.dataset.theme = systemTheme();
         syncToggle();
       });
       syncToggle();
