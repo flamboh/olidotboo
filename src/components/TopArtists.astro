@@ -40,6 +40,8 @@
 </div>
 
 <script>
+  import { cascadeDelays } from "@/lib/cascade";
+
   interface Artist {
     name: string;
     playcount: number;
@@ -68,6 +70,7 @@
       const fadeDuration = 180;
       const moveDuration = 420;
       const moveEasing = "cubic-bezier(0.22, 0.8, 0.25, 1)";
+      const cascadeStep = moveDuration / 2;
       let requestId = 0;
 
       function setDropdownOpen(open: boolean) {
@@ -234,11 +237,16 @@
         list.setAttribute("aria-busy", "false");
         if (reducedMotion) return;
 
-        const fadeInDelay = existing.size > 0 ? fadeDuration / 2 : 0;
-        items.forEach((item) => {
+        const delays = cascadeDelays(
+          [...existing.keys()],
+          artists.map((artist) => artist.name),
+          cascadeStep,
+        );
+        items.forEach((item, index) => {
+          const delay = delays.get(artists[index].name) ?? 0;
           const before = first.get(item);
           if (!before) {
-            fadeIn(item, 0, fadeInDelay);
+            fadeIn(item, 0, delay);
             return;
           }
           const after = item.getBoundingClientRect();
@@ -251,7 +259,12 @@
                 { transform: `translate(${dx}px, ${dy}px)` },
                 { transform: "none" },
               ],
-              { duration: moveDuration, easing: moveEasing },
+              {
+                duration: moveDuration,
+                delay,
+                easing: moveEasing,
+                fill: "backwards",
+              },
             );
           }
           if (labelDx !== 0) {
@@ -260,11 +273,16 @@
                 { transform: `translateX(${labelDx}px)` },
                 { transform: "none" },
               ],
-              { duration: moveDuration, easing: moveEasing },
+              {
+                duration: moveDuration,
+                delay,
+                easing: moveEasing,
+                fill: "backwards",
+              },
             );
           }
-          fadeIn(item, before.opacity, fadeInDelay);
-          fadeIn(playcountOf(item), before.playcountOpacity, fadeInDelay);
+          fadeIn(item, before.opacity, delay);
+          fadeIn(playcountOf(item), before.playcountOpacity, delay);
         });
       }
 
