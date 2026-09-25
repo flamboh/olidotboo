@@ -60,13 +60,14 @@
       const periodLabel = root.querySelector<HTMLElement>(
         "[data-period-label]",
       );
-      const content = root.querySelector<HTMLElement>(".artists-content");
       const buttons = root.querySelectorAll<HTMLButtonElement>("[data-period]");
-      const loaded = new Map<string, Artist[]>();
-      const transitionDuration = matchMedia("(prefers-reduced-motion: reduce)")
-        .matches
-        ? 0
-        : 180;
+      const requests = new Map<string, Promise<Artist[]>>();
+      const reducedMotion = matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const fadeDuration = 180;
+      const moveDuration = 420;
+      const moveEasing = "cubic-bezier(0.22, 0.8, 0.25, 1)";
       let requestId = 0;
 
       function setDropdownOpen(open: boolean) {
@@ -75,38 +76,214 @@
         trigger.setAttribute("aria-expanded", String(open));
       }
 
-      function render(artists: Artist[]) {
-        if (!list || !status) return;
-        list.replaceChildren(
-          ...artists.map((artist) => {
-            const item = document.createElement("li");
-            const link = document.createElement("a");
-            const count = document.createElement("span");
-            item.className = "artist-item";
-            link.className = "artist-name";
-            count.className = "artist-count";
-            link.href = artist.url;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = artist.name;
-            count.textContent = `${artist.playcount.toLocaleString()} plays`;
-            item.appendChild(link);
-            item.appendChild(count);
-            return item;
-          }),
+      function loadArtists(period: string) {
+        let request = requests.get(period);
+        if (!request) {
+          request = fetch(`/api/top-artists?period=${period}`)
+            .then(async (response) => {
+              if (!response.ok) throw new Error("Unable to load top artists");
+              const data = (await response.json()) as { artists?: Artist[] };
+              if (!Array.isArray(data.artists)) {
+                throw new Error("Invalid response");
+              }
+              return data.artists;
+            })
+            .catch((error: unknown) => {
+              requests.delete(period);
+              throw error;
+            });
+          requests.set(period, request);
+        }
+        return request;
+      }
+
+      function prefetchOtherPeriods(period: string) {
+        buttons.forEach((button) => {
+          const other = button.dataset.period;
+          if (other && other !== period) loadArtists(other).catch(() => {});
+        });
+      }
+
+      function createItem(artist: Artist) {
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        const count = document.createElement("span");
+        const playcount = document.createElement("span");
+        const label = document.createElement("span");
+        item.className = "artist-item";
+        item.dataset.artist = artist.name;
+        link.className = "artist-name";
+        count.className = "artist-count";
+        playcount.className = "artist-playcount";
+        label.className = "artist-plays";
+        label.textContent = " plays";
+        link.href = artist.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = artist.name;
+        count.appendChild(playcount);
+        count.appendChild(label);
+        item.appendChild(link);
+        item.appendChild(count);
+        return item;
+      }
+
+      function currentItems() {
+        return new Map(
+          [
+            ...(list?.querySelectorAll<HTMLLIElement>(".artist-item") ?? []),
+          ].flatMap((item) =>
+            item.dataset.artist ? [[item.dataset.artist, item] as const] : [],
+          ),
         );
+      }
+
+      async function finished(animations: Animation[]) {
+        await Promise.all(
+          animations.map((animation) => animation.finished.catch(() => {})),
+        );
+      }
+
+      function fadeOut(elements: Element[]) {
+        return finished(
+          elements.map((element) =>
+            element.animate(
+              [{ opacity: getComputedStyle(element).opacity }, { opacity: 0 }],
+              { duration: fadeDuration, easing: "ease", fill: "forwards" },
+            ),
+          ),
+        );
+      }
+
+      function playcountOf(item: Element) {
+        return item.querySelector(".artist-playcount")!;
+      }
+
+      function labelOf(item: Element) {
+        return item.querySelector(".artist-plays")!;
+      }
+
+      function labelOffset(item: Element) {
+        return (
+          labelOf(item).getBoundingClientRect().left -
+          item.getBoundingClientRect().left
+        );
+      }
+
+      function fadeIn(element: Element, from: number, delay: number) {
+        if (from < 1) {
+          element.animate([{ opacity: from }, { opacity: 1 }], {
+            duration: moveDuration,
+            delay,
+            easing: "ease",
+            fill: "backwards",
+          });
+        }
+      }
+
+      async function showArtists(artists: Artist[], currentRequest: number) {
+        if (!list || !status) return;
+        const existing = currentItems();
+        const nextNames = new Set(artists.map((artist) => artist.name));
+        const leaving = [...existing]
+          .filter(([name]) => !nextNames.has(name))
+          .map(([, item]) => item);
+        const changedPlaycounts = artists.flatMap((artist) => {
+          const item = existing.get(artist.name);
+          return item &&
+            playcountOf(item).textContent !== artist.playcount.toLocaleString()
+            ? [playcountOf(item)]
+            : [];
+        });
+
+        if (!reducedMotion && leaving.length + changedPlaycounts.length > 0) {
+          await fadeOut([...leaving, ...changedPlaycounts]);
+          if (currentRequest !== requestId) return;
+        }
+
+        const first = new Map<
+          Element,
+          {
+            rect: DOMRect;
+            opacity: number;
+            playcountOpacity: number;
+            labelOffset: number;
+          }
+        >();
+        existing.forEach((item) => {
+          first.set(item, {
+            rect: item.getBoundingClientRect(),
+            opacity: Number(getComputedStyle(item).opacity),
+            playcountOpacity: Number(
+              getComputedStyle(playcountOf(item)).opacity,
+            ),
+            labelOffset: labelOffset(item),
+          });
+          item
+            .getAnimations({ subtree: true })
+            .forEach((animation) => animation.cancel());
+        });
+
+        const items = artists.map((artist) => {
+          const item = existing.get(artist.name) ?? createItem(artist);
+          playcountOf(item).textContent = artist.playcount.toLocaleString();
+          return item;
+        });
+        list.replaceChildren(...items);
         status.hidden = true;
         list.setAttribute("aria-busy", "false");
+        if (reducedMotion) return;
+
+        const fadeInDelay = existing.size > 0 ? fadeDuration / 2 : 0;
+        items.forEach((item) => {
+          const before = first.get(item);
+          if (!before) {
+            fadeIn(item, 0, fadeInDelay);
+            return;
+          }
+          const after = item.getBoundingClientRect();
+          const labelDx = before.labelOffset - labelOffset(item);
+          const dx = before.rect.left - after.left;
+          const dy = before.rect.top - after.top;
+          if (dx !== 0 || dy !== 0) {
+            item.animate(
+              [
+                { transform: `translate(${dx}px, ${dy}px)` },
+                { transform: "none" },
+              ],
+              { duration: moveDuration, easing: moveEasing },
+            );
+          }
+          if (labelDx !== 0) {
+            labelOf(item).animate(
+              [
+                { transform: `translateX(${labelDx}px)` },
+                { transform: "none" },
+              ],
+              { duration: moveDuration, easing: moveEasing },
+            );
+          }
+          fadeIn(item, before.opacity, fadeInDelay);
+          fadeIn(playcountOf(item), before.playcountOpacity, fadeInDelay);
+        });
       }
 
-      async function fadeOutContent() {
-        if (!content || transitionDuration === 0) return;
-        content.classList.add("is-changing");
-        await new Promise((resolve) => setTimeout(resolve, transitionDuration));
-      }
-
-      function fadeInContent() {
-        content?.classList.remove("is-changing");
+      async function showError(currentRequest: number) {
+        if (!list || !status) return;
+        if (!reducedMotion) {
+          await fadeOut([...currentItems().values()]);
+          if (currentRequest !== requestId) return;
+        }
+        list.replaceChildren();
+        list.setAttribute("aria-busy", "false");
+        status.textContent = "top artists unavailable";
+        status.hidden = false;
+        if (!reducedMotion) {
+          status.animate([{ opacity: 0 }, { opacity: 1 }], {
+            duration: fadeDuration,
+            easing: "ease",
+          });
+        }
       }
 
       async function selectPeriod(period: string) {
@@ -120,45 +297,16 @@
         });
         if (periodLabel) periodLabel.textContent = `${period} days`;
         setDropdownOpen(false);
-
-        await fadeOutContent();
-        if (currentRequest !== requestId) return;
-
-        const cached = loaded.get(period);
-        if (cached) {
-          render(cached);
-          fadeInContent();
-          return;
-        }
-
-        if (list && status) {
-          list.replaceChildren();
-          list.setAttribute("aria-busy", "true");
-          status.textContent = "loading…";
-          status.hidden = false;
-        }
-        fadeInContent();
+        list?.setAttribute("aria-busy", "true");
 
         try {
-          const response = await fetch(`/api/top-artists?period=${period}`);
-          if (!response.ok) throw new Error("Unable to load top artists");
-          const data = (await response.json()) as { artists?: Artist[] };
-          if (!Array.isArray(data.artists)) throw new Error("Invalid response");
-          loaded.set(period, data.artists);
+          const artists = await loadArtists(period);
           if (currentRequest !== requestId) return;
-          await fadeOutContent();
-          if (currentRequest !== requestId) return;
-          render(data.artists);
-          fadeInContent();
+          await showArtists(artists, currentRequest);
+          prefetchOtherPeriods(period);
         } catch {
-          if (currentRequest !== requestId || !list || !status) return;
-          await fadeOutContent();
           if (currentRequest !== requestId) return;
-          list.replaceChildren();
-          list.setAttribute("aria-busy", "false");
-          status.textContent = "top artists unavailable";
-          status.hidden = false;
-          fadeInContent();
+          await showError(currentRequest);
         }
       }
 
@@ -286,11 +434,6 @@
     display: grid;
     min-height: 6.5rem;
     margin-top: 0.625rem;
-    transition: opacity 0.18s ease;
-  }
-
-  .artists-content.is-changing {
-    opacity: 0;
   }
 
   ol {
@@ -314,6 +457,12 @@
     margin-top: 0.125rem;
     color: var(--fg-tertiary);
     font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .top-artists :global(.artist-plays) {
+    display: inline-block;
+    white-space: pre;
   }
 
   .artist-status {
@@ -324,8 +473,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .period-menu,
-    .artists-content {
+    .period-menu {
       transition: none;
     }
   }
