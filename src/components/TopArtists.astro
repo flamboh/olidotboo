@@ -212,6 +212,7 @@ const dropdowns = [
         playcount.className = "artist-playcount";
         label.className = "artist-plays";
         playcount.textContent = artist.playcount.toLocaleString();
+        shownCounts.set(item, artist.playcount);
         label.textContent = " plays";
         link.href = artist.url;
         link.target = "_blank";
@@ -277,41 +278,61 @@ const dropdowns = [
         }
       }
 
-      function swapPlaycount(
-        item: Element,
-        text: string,
-        delay: number,
-        from: number,
-      ) {
+      const shownCounts = new WeakMap<Element, number>();
+      const countFrames = new WeakMap<Element, number>();
+
+      function easeInOutCubic(t: number) {
+        return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+      }
+
+      function stopCount(item: Element) {
+        const frame = countFrames.get(item);
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        countFrames.delete(item);
+      }
+
+      function setPlaycount(item: Element, value: number) {
         const playcount = playcountOf(item);
-        const half = moveDuration / 2;
-        const out = playcount.animate([{ opacity: from }, { opacity: 0 }], {
-          duration: half,
-          delay,
-          easing: "ease-in",
-          fill: "both",
-        });
-        out.finished
-          .then(() => {
-            const labelBefore = labelOffset(item);
-            playcount.textContent = text;
-            const labelDx = labelBefore - labelOffset(item);
-            if (labelDx !== 0) {
-              labelOf(item).animate(
-                [
-                  { transform: `translateX(${labelDx}px)` },
-                  { transform: "none" },
-                ],
-                { duration: half, easing: "ease-out" },
-              );
-            }
-            playcount.animate([{ opacity: 0 }, { opacity: 1 }], {
-              duration: half,
-              easing: "ease-out",
-            });
-            out.cancel();
-          })
-          .catch(() => {});
+        const text = value.toLocaleString();
+        if (playcount.textContent === text) return;
+        const widthChanged = playcount.textContent?.length !== text.length;
+        const labelBefore = widthChanged ? labelOffset(item) : 0;
+        playcount.textContent = text;
+        shownCounts.set(item, value);
+        if (!widthChanged || reducedMotion) return;
+        const labelDx = labelBefore - labelOffset(item);
+        if (labelDx !== 0) {
+          labelOf(item).animate(
+            [{ transform: `translateX(${labelDx}px)` }, { transform: "none" }],
+            { duration: moveDuration / 3, easing: "ease-out" },
+          );
+        }
+      }
+
+      function countTo(item: Element, target: number, delay: number) {
+        stopCount(item);
+        const from = shownCounts.get(item) ?? target;
+        if (from === target) {
+          setPlaycount(item, target);
+          return;
+        }
+        const startTime = performance.now() + delay;
+        const tick = (now: number) => {
+          const progress = Math.min(
+            Math.max((now - startTime) / moveDuration, 0),
+            1,
+          );
+          setPlaycount(
+            item,
+            Math.round(from + (target - from) * easeInOutCubic(progress)),
+          );
+          if (progress < 1) {
+            countFrames.set(item, requestAnimationFrame(tick));
+          } else {
+            countFrames.delete(item);
+          }
+        };
+        countFrames.set(item, requestAnimationFrame(tick));
       }
 
       function pinLeaving(
@@ -320,6 +341,7 @@ const dropdowns = [
         opacity: string,
         listRect: DOMRect,
       ) {
+        stopCount(item);
         item
           .getAnimations({ subtree: true })
           .forEach((animation) => animation.cancel());
@@ -362,7 +384,6 @@ const dropdowns = [
           {
             rect: DOMRect;
             opacity: number;
-            playcountOpacity: number;
             labelOffset: number;
           }
         >();
@@ -376,11 +397,9 @@ const dropdowns = [
           first.set(item, {
             rect: item.getBoundingClientRect(),
             opacity: Number(getComputedStyle(item).opacity),
-            playcountOpacity: Number(
-              getComputedStyle(playcountOf(item)).opacity,
-            ),
             labelOffset: labelOffset(item),
           });
+          stopCount(item);
           item
             .getAnimations({ subtree: true })
             .forEach((animation) => animation.cancel());
@@ -403,8 +422,8 @@ const dropdowns = [
         list.setAttribute("aria-busy", "false");
         if (reducedMotion) {
           items.forEach((item, index) => {
-            playcountOf(item).textContent =
-              artists[index].playcount.toLocaleString();
+            stopCount(item);
+            setPlaycount(item, artists[index].playcount);
           });
           return;
         }
@@ -466,12 +485,7 @@ const dropdowns = [
             );
           }
           fadeIn(item, before.opacity, delay);
-          const text = artists[index].playcount.toLocaleString();
-          if (playcountOf(item).textContent === text) {
-            fadeIn(playcountOf(item), before.playcountOpacity, delay);
-          } else {
-            swapPlaycount(item, text, delay, before.playcountOpacity);
-          }
+          countTo(item, artists[index].playcount, delay);
         });
       }
 
