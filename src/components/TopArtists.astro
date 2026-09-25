@@ -170,11 +170,13 @@
         );
       }
 
-      function fadeIn(element: Element, from: number) {
+      function fadeIn(element: Element, from: number, delay: number) {
         if (from < 1) {
           element.animate([{ opacity: from }, { opacity: 1 }], {
-            duration: fadeDuration,
+            duration: moveDuration,
+            delay,
             easing: "ease",
+            fill: "backwards",
           });
         }
       }
@@ -232,15 +234,11 @@
         list.setAttribute("aria-busy", "false");
         if (reducedMotion) return;
 
+        const fadeInDelay = existing.size > 0 ? fadeDuration / 2 : 0;
         items.forEach((item) => {
           const before = first.get(item);
           if (!before) {
-            item.animate([{ opacity: 0 }, { opacity: 1 }], {
-              duration: moveDuration,
-              delay: existing.size > 0 ? fadeDuration / 2 : 0,
-              easing: "ease",
-              fill: "backwards",
-            });
+            fadeIn(item, 0, fadeInDelay);
             return;
           }
           const after = item.getBoundingClientRect();
@@ -265,8 +263,8 @@
               { duration: moveDuration, easing: moveEasing },
             );
           }
-          fadeIn(item, before.opacity);
-          fadeIn(playcountOf(item), before.playcountOpacity);
+          fadeIn(item, before.opacity, fadeInDelay);
+          fadeIn(playcountOf(item), before.playcountOpacity, fadeInDelay);
         });
       }
 
