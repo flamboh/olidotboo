@@ -6,6 +6,10 @@ export const periods = {
 
 export type Period = keyof typeof periods;
 
+export const limits = ["4", "8"] as const;
+
+export type Limit = (typeof limits)[number];
+
 export interface Artist {
   name: string;
   playcount: number;
@@ -28,12 +32,20 @@ export function isPeriod(value: string): value is Period {
   return value in periods;
 }
 
-export async function getTopArtists(period: Period, apiKey: string) {
+export function isLimit(value: string): value is Limit {
+  return limits.some((limit) => limit === value);
+}
+
+export async function getTopArtists(
+  period: Period,
+  limit: Limit,
+  apiKey: string,
+) {
   const params = new URLSearchParams({
     method: "user.gettopartists",
     user: "flamboh",
     period: periods[period],
-    limit: "4",
+    limit,
     format: "json",
     api_key: apiKey,
   });
@@ -46,7 +58,7 @@ export async function getTopArtists(period: Period, apiKey: string) {
     throw new Error(data.message ?? "Last.fm request failed");
   }
 
-  return data.topartists.artist.slice(0, 4).flatMap((artist) => {
+  return data.topartists.artist.slice(0, Number(limit)).flatMap((artist) => {
     const playcount = Number(artist.playcount);
     if (!artist.name || !artist.url || !Number.isFinite(playcount)) return [];
     return [{ name: artist.name, playcount, url: artist.url } satisfies Artist];

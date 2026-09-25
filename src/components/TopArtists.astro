@@ -1,40 +1,89 @@
+---
+const dropdowns = [
+  {
+    name: "count",
+    label: "Number of artists",
+    selected: "4",
+    options: [4, 8].map((count) => ({
+      value: String(count),
+      text: `${count} artists`,
+    })),
+  },
+  {
+    name: "period",
+    label: "Time period",
+    selected: "180",
+    options: [30, 90, 180].map((days) => ({
+      value: String(days),
+      text: `${days} days`,
+    })),
+  },
+];
+---
+
 <div class="top-artists" data-top-artists>
   <div class="top-artists-header">
     <h3 class="label top-artists-title"><span>top artists</span></h3>
-    <div class="period-dropdown" data-period-dropdown>
-      <button
-        class="period-trigger"
-        type="button"
-        aria-expanded="false"
-        aria-controls="top-artist-periods"
-        data-period-trigger
-      >
-        <span data-period-label>180 days</span>
-      </button>
-      <div class="period-menu-viewport">
+    {
+      dropdowns.map((dropdown) => (
         <div
-          class="period-menu"
-          id="top-artist-periods"
-          aria-label="Time period"
+          class="dropdown"
+          style={`--dropdown-width: ${Math.max(...dropdown.options.map((option) => option.text.length))}ch`}
+          data-dropdown={dropdown.name}
         >
-          {
-            [30, 90, 180].map((days) => (
-              <button
-                type="button"
-                data-period={days}
-                aria-current={days === 180 ? "true" : undefined}
-              >
-                {days} days
-              </button>
-            ))
-          }
+          <button
+            class="dropdown-trigger"
+            type="button"
+            aria-expanded="false"
+            aria-controls={`top-artist-${dropdown.name}`}
+            data-dropdown-trigger
+          >
+            <span data-dropdown-label>
+              {
+                dropdown.options.find(
+                  (option) => option.value === dropdown.selected,
+                )?.text
+              }
+            </span>
+          </button>
+          <div class="dropdown-menu-viewport">
+            <div
+              class="dropdown-menu"
+              id={`top-artist-${dropdown.name}`}
+              aria-label={dropdown.label}
+            >
+              {dropdown.options.map((option) => (
+                <button
+                  type="button"
+                  data-value={option.value}
+                  aria-current={
+                    option.value === dropdown.selected ? "true" : undefined
+                  }
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      ))
+    }
   </div>
 
   <div class="artists-content">
-    <ol aria-live="polite" aria-busy="true" data-artist-list></ol>
+    <ol aria-live="polite" aria-busy="true" data-artist-list>
+      {
+        Array.from({ length: 4 }, () => (
+          <li class="artist-item artist-placeholder" aria-hidden="true">
+            <span class="artist-name">&nbsp;</span>
+            <span class="artist-count">
+              <span class="artist-playcount">0</span>
+              <span class="artist-plays"> plays</span>
+            </span>
+          </li>
+        ))
+      }
+    </ol>
     <p class="artist-status" role="status" data-artist-status>loading…</p>
   </div>
 </div>
@@ -53,16 +102,10 @@
     .forEach((root) => {
       const list = root.querySelector<HTMLOListElement>("[data-artist-list]");
       const status = root.querySelector<HTMLElement>("[data-artist-status]");
-      const dropdown = root.querySelector<HTMLElement>(
-        "[data-period-dropdown]",
+      const content = root.querySelector<HTMLElement>(".artists-content");
+      const periodOptions = root.querySelectorAll<HTMLButtonElement>(
+        '[data-dropdown="period"] [data-value]',
       );
-      const trigger = root.querySelector<HTMLButtonElement>(
-        "[data-period-trigger]",
-      );
-      const periodLabel = root.querySelector<HTMLElement>(
-        "[data-period-label]",
-      );
-      const buttons = root.querySelectorAll<HTMLButtonElement>("[data-period]");
       const requests = new Map<string, Promise<Artist[]>>();
       const reducedMotion = matchMedia(
         "(prefers-reduced-motion: reduce)",
@@ -72,17 +115,66 @@
       const moveEasing = "cubic-bezier(0.65, 0, 0.35, 1)";
       const cascadeStep = moveDuration * 0.4;
       let requestId = 0;
+      let period = "180";
+      let count = 4;
 
-      function setDropdownOpen(open: boolean) {
-        if (!dropdown || !trigger) return;
-        dropdown.dataset.open = String(open);
-        trigger.setAttribute("aria-expanded", String(open));
+      function setupDropdown(
+        dropdown: HTMLElement,
+        onSelect: (value: string) => void,
+      ) {
+        const trigger = dropdown.querySelector<HTMLButtonElement>(
+          "[data-dropdown-trigger]",
+        );
+        const label = dropdown.querySelector<HTMLElement>(
+          "[data-dropdown-label]",
+        );
+        const options =
+          dropdown.querySelectorAll<HTMLButtonElement>("[data-value]");
+
+        function setOpen(open: boolean) {
+          dropdown.dataset.open = String(open);
+          trigger?.setAttribute("aria-expanded", String(open));
+        }
+
+        options.forEach((option) => {
+          option.addEventListener("click", () => {
+            options.forEach((other) => {
+              if (other === option) {
+                other.setAttribute("aria-current", "true");
+              } else {
+                other.removeAttribute("aria-current");
+              }
+            });
+            if (label) label.textContent = option.textContent?.trim() ?? "";
+            setOpen(false);
+            if (option.dataset.value) onSelect(option.dataset.value);
+          });
+        });
+
+        trigger?.addEventListener("click", () => {
+          setOpen(trigger.getAttribute("aria-expanded") !== "true");
+        });
+
+        document.addEventListener("click", (event) => {
+          if (
+            event.target instanceof Node &&
+            !dropdown.contains(event.target)
+          ) {
+            setOpen(false);
+          }
+        });
+
+        dropdown.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          setOpen(false);
+          trigger?.focus();
+        });
       }
 
       function loadArtists(period: string) {
         let request = requests.get(period);
         if (!request) {
-          request = fetch(`/api/top-artists?period=${period}`)
+          request = fetch(`/api/top-artists?period=${period}&limit=8`)
             .then(async (response) => {
               if (!response.ok) throw new Error("Unable to load top artists");
               const data = (await response.json()) as { artists?: Artist[] };
@@ -101,8 +193,8 @@
       }
 
       function prefetchOtherPeriods(period: string) {
-        buttons.forEach((button) => {
-          const other = button.dataset.period;
+        periodOptions.forEach((option) => {
+          const other = option.dataset.value;
           if (other && other !== period) loadArtists(other).catch(() => {});
         });
       }
@@ -244,6 +336,8 @@
             labelOffset: number;
           }
         >();
+        const startHeight = content?.getBoundingClientRect().height ?? 0;
+        content?.getAnimations().forEach((animation) => animation.cancel());
         existing.forEach((item) => {
           first.set(item, {
             rect: item.getBoundingClientRect(),
@@ -270,6 +364,17 @@
               artists[index].playcount.toLocaleString();
           });
           return;
+        }
+
+        const endHeight = content?.getBoundingClientRect().height ?? 0;
+        if (content && existing.size > 0 && startHeight !== endHeight) {
+          content.animate(
+            [
+              { height: `${startHeight}px`, overflow: "clip" },
+              { height: `${endHeight}px`, overflow: "clip" },
+            ],
+            { duration: moveDuration, easing: moveEasing },
+          );
         }
 
         const delays = cascadeDelays(
@@ -339,23 +444,14 @@
         }
       }
 
-      async function selectPeriod(period: string) {
+      async function update() {
         const currentRequest = ++requestId;
-        buttons.forEach((button) => {
-          if (button.dataset.period === period) {
-            button.setAttribute("aria-current", "true");
-          } else {
-            button.removeAttribute("aria-current");
-          }
-        });
-        if (periodLabel) periodLabel.textContent = `${period} days`;
-        setDropdownOpen(false);
         list?.setAttribute("aria-busy", "true");
 
         try {
           const artists = await loadArtists(period);
           if (currentRequest !== requestId) return;
-          await showArtists(artists, currentRequest);
+          await showArtists(artists.slice(0, count), currentRequest);
           prefetchOtherPeriods(period);
         } catch {
           if (currentRequest !== requestId) return;
@@ -363,29 +459,20 @@
         }
       }
 
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-          if (button.dataset.period) void selectPeriod(button.dataset.period);
+      root
+        .querySelectorAll<HTMLElement>("[data-dropdown]")
+        .forEach((dropdown) => {
+          setupDropdown(dropdown, (value) => {
+            if (dropdown.dataset.dropdown === "count") {
+              count = Number(value);
+            } else {
+              period = value;
+            }
+            void update();
+          });
         });
-      });
 
-      trigger?.addEventListener("click", () => {
-        setDropdownOpen(trigger.getAttribute("aria-expanded") !== "true");
-      });
-
-      document.addEventListener("click", (event) => {
-        if (event.target instanceof Node && !dropdown?.contains(event.target)) {
-          setDropdownOpen(false);
-        }
-      });
-
-      dropdown?.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape") return;
-        setDropdownOpen(false);
-        trigger?.focus();
-      });
-
-      void selectPeriod("180");
+      void update();
     });
 </script>
 
@@ -407,13 +494,13 @@
     flex: 1;
   }
 
-  .period-dropdown {
+  .dropdown {
     position: relative;
-    width: calc(8ch + 0.625rem);
+    width: calc(var(--dropdown-width) + 0.625rem);
     font-size: 0.75rem;
   }
 
-  .period-trigger {
+  .dropdown-trigger {
     position: relative;
     z-index: 2;
     display: flex;
@@ -428,20 +515,19 @@
       border-color var(--theme-fade) ease;
   }
 
-  .period-menu-viewport {
+  .dropdown-menu-viewport {
     position: absolute;
     z-index: 2;
     top: calc(100% - 1px);
     right: -1px;
     width: calc(100% + 2px);
-    height: 6rem;
     overflow: hidden;
     pointer-events: none;
     visibility: hidden;
     transition: visibility 0s linear 0.34s;
   }
 
-  .period-menu {
+  .dropdown-menu {
     background: var(--bg);
     border: 1px solid var(--border);
     border-top: 0;
@@ -453,17 +539,17 @@
       border-color var(--theme-fade) ease;
   }
 
-  .period-dropdown[data-open="true"] .period-menu-viewport {
+  .dropdown[data-open="true"] .dropdown-menu-viewport {
     visibility: visible;
     pointer-events: auto;
     transition-delay: 0s;
   }
 
-  .period-dropdown[data-open="true"] .period-menu {
+  .dropdown[data-open="true"] .dropdown-menu {
     transform: translateY(0);
   }
 
-  .period-menu button {
+  .dropdown-menu button {
     display: block;
     width: 100%;
     padding: 0.25rem;
@@ -475,11 +561,11 @@
       background-color var(--theme-fade) ease;
   }
 
-  .period-menu button:hover {
+  .dropdown-menu button:hover {
     background: var(--border);
   }
 
-  .period-menu button[aria-current="true"] {
+  .dropdown-menu button[aria-current="true"] {
     color: var(--fg);
   }
 
@@ -499,6 +585,10 @@
 
   .top-artists :global(.artist-item) {
     min-width: 0;
+  }
+
+  .artist-placeholder {
+    visibility: hidden;
   }
 
   .top-artists :global(.artist-name),
@@ -526,7 +616,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .period-menu {
+    .dropdown-menu {
       transition: none;
     }
   }
