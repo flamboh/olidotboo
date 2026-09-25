@@ -314,18 +314,48 @@ const dropdowns = [
           .catch(() => {});
       }
 
-      async function showArtists(artists: Artist[], currentRequest: number) {
+      function pinLeaving(
+        item: HTMLElement,
+        rect: DOMRect,
+        opacity: string,
+        listRect: DOMRect,
+      ) {
+        item
+          .getAnimations({ subtree: true })
+          .forEach((animation) => animation.cancel());
+        delete item.dataset.artist;
+        item.classList.add("artist-leaving");
+        item.style.top = `${rect.top - listRect.top}px`;
+        item.style.left = `${rect.left - listRect.left}px`;
+        item.style.width = `${rect.width}px`;
+        item
+          .animate([{ opacity }, { opacity: 0 }], {
+            duration: fadeDuration,
+            easing: "ease",
+            fill: "forwards",
+          })
+          .finished.then(() => item.remove())
+          .catch(() => {});
+      }
+
+      function showArtists(artists: Artist[]) {
         if (!list || !status) return;
         const existing = currentItems();
         const nextNames = new Set(artists.map((artist) => artist.name));
         const leaving = [...existing]
           .filter(([name]) => !nextNames.has(name))
           .map(([, item]) => item);
+        const ghosts = [
+          ...list.querySelectorAll<HTMLElement>(".artist-leaving"),
+        ];
+        const start = leaving.length > 0 ? fadeDuration : 0;
 
-        if (!reducedMotion && leaving.length > 0) {
-          await fadeOut(leaving);
-          if (currentRequest !== requestId) return;
-        }
+        const listRect = list.getBoundingClientRect();
+        const leavingState = leaving.map((item) => ({
+          item,
+          rect: item.getBoundingClientRect(),
+          opacity: getComputedStyle(item).opacity,
+        }));
 
         const first = new Map<
           Element,
@@ -339,6 +369,7 @@ const dropdowns = [
         const startHeight = content?.getBoundingClientRect().height ?? 0;
         content?.getAnimations().forEach((animation) => animation.cancel());
         existing.forEach((item) => {
+          if (leaving.includes(item)) return;
           first.set(item, {
             rect: item.getBoundingClientRect(),
             opacity: Number(getComputedStyle(item).opacity),
@@ -352,10 +383,19 @@ const dropdowns = [
             .forEach((animation) => animation.cancel());
         });
 
+        if (!reducedMotion) {
+          leavingState.forEach(({ item, rect, opacity }) =>
+            pinLeaving(item, rect, opacity, listRect),
+          );
+        }
+
         const items = artists.map(
           (artist) => existing.get(artist.name) ?? createItem(artist),
         );
-        list.replaceChildren(...items);
+        list.replaceChildren(
+          ...items,
+          ...(reducedMotion ? [] : [...ghosts, ...leaving]),
+        );
         status.hidden = true;
         list.setAttribute("aria-busy", "false");
         if (reducedMotion) {
@@ -383,7 +423,7 @@ const dropdowns = [
           cascadeStep,
         );
         items.forEach((item, index) => {
-          const delay = delays.get(artists[index].name) ?? 0;
+          const delay = start + (delays.get(artists[index].name) ?? 0);
           const before = first.get(item);
           if (!before) {
             fadeIn(item, 0, delay);
@@ -451,7 +491,7 @@ const dropdowns = [
         try {
           const artists = await loadArtists(period);
           if (currentRequest !== requestId) return;
-          await showArtists(artists.slice(0, count), currentRequest);
+          showArtists(artists.slice(0, count));
           prefetchOtherPeriods(period);
         } catch {
           if (currentRequest !== requestId) return;
@@ -576,15 +616,22 @@ const dropdowns = [
   }
 
   ol {
+    position: relative;
     grid-area: 1 / 1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
     gap: 0.875rem 2rem;
     list-style: none;
   }
 
   .top-artists :global(.artist-item) {
     min-width: 0;
+  }
+
+  .top-artists :global(.artist-leaving) {
+    position: absolute;
+    pointer-events: none;
   }
 
   .artist-placeholder {
