@@ -40,6 +40,8 @@
 </div>
 
 <script>
+  import { cascadeDelays } from "@/lib/cascade";
+
   interface Artist {
     name: string;
     playcount: number;
@@ -65,9 +67,10 @@
       const reducedMotion = matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
-      const fadeDuration = 180;
-      const moveDuration = 420;
-      const moveEasing = "cubic-bezier(0.22, 0.8, 0.25, 1)";
+      const fadeDuration = 220;
+      const moveDuration = 520;
+      const moveEasing = "cubic-bezier(0.65, 0, 0.35, 1)";
+      const cascadeStep = moveDuration * 0.4;
       let requestId = 0;
 
       function setDropdownOpen(open: boolean) {
@@ -116,6 +119,7 @@
         count.className = "artist-count";
         playcount.className = "artist-playcount";
         label.className = "artist-plays";
+        playcount.textContent = artist.playcount.toLocaleString();
         label.textContent = " plays";
         link.href = artist.url;
         link.target = "_blank";
@@ -181,6 +185,43 @@
         }
       }
 
+      function swapPlaycount(
+        item: Element,
+        text: string,
+        delay: number,
+        from: number,
+      ) {
+        const playcount = playcountOf(item);
+        const half = moveDuration / 2;
+        const out = playcount.animate([{ opacity: from }, { opacity: 0 }], {
+          duration: half,
+          delay,
+          easing: "ease-in",
+          fill: "both",
+        });
+        out.finished
+          .then(() => {
+            const labelBefore = labelOffset(item);
+            playcount.textContent = text;
+            const labelDx = labelBefore - labelOffset(item);
+            if (labelDx !== 0) {
+              labelOf(item).animate(
+                [
+                  { transform: `translateX(${labelDx}px)` },
+                  { transform: "none" },
+                ],
+                { duration: half, easing: "ease-out" },
+              );
+            }
+            playcount.animate([{ opacity: 0 }, { opacity: 1 }], {
+              duration: half,
+              easing: "ease-out",
+            });
+            out.cancel();
+          })
+          .catch(() => {});
+      }
+
       async function showArtists(artists: Artist[], currentRequest: number) {
         if (!list || !status) return;
         const existing = currentItems();
@@ -188,16 +229,9 @@
         const leaving = [...existing]
           .filter(([name]) => !nextNames.has(name))
           .map(([, item]) => item);
-        const changedPlaycounts = artists.flatMap((artist) => {
-          const item = existing.get(artist.name);
-          return item &&
-            playcountOf(item).textContent !== artist.playcount.toLocaleString()
-            ? [playcountOf(item)]
-            : [];
-        });
 
-        if (!reducedMotion && leaving.length + changedPlaycounts.length > 0) {
-          await fadeOut([...leaving, ...changedPlaycounts]);
+        if (!reducedMotion && leaving.length > 0) {
+          await fadeOut(leaving);
           if (currentRequest !== requestId) return;
         }
 
@@ -224,21 +258,30 @@
             .forEach((animation) => animation.cancel());
         });
 
-        const items = artists.map((artist) => {
-          const item = existing.get(artist.name) ?? createItem(artist);
-          playcountOf(item).textContent = artist.playcount.toLocaleString();
-          return item;
-        });
+        const items = artists.map(
+          (artist) => existing.get(artist.name) ?? createItem(artist),
+        );
         list.replaceChildren(...items);
         status.hidden = true;
         list.setAttribute("aria-busy", "false");
-        if (reducedMotion) return;
+        if (reducedMotion) {
+          items.forEach((item, index) => {
+            playcountOf(item).textContent =
+              artists[index].playcount.toLocaleString();
+          });
+          return;
+        }
 
-        const fadeInDelay = existing.size > 0 ? fadeDuration / 2 : 0;
-        items.forEach((item) => {
+        const delays = cascadeDelays(
+          [...existing.keys()],
+          artists.map((artist) => artist.name),
+          cascadeStep,
+        );
+        items.forEach((item, index) => {
+          const delay = delays.get(artists[index].name) ?? 0;
           const before = first.get(item);
           if (!before) {
-            fadeIn(item, 0, fadeInDelay);
+            fadeIn(item, 0, delay);
             return;
           }
           const after = item.getBoundingClientRect();
@@ -251,7 +294,12 @@
                 { transform: `translate(${dx}px, ${dy}px)` },
                 { transform: "none" },
               ],
-              { duration: moveDuration, easing: moveEasing },
+              {
+                duration: moveDuration,
+                delay,
+                easing: moveEasing,
+                fill: "backwards",
+              },
             );
           }
           if (labelDx !== 0) {
@@ -260,11 +308,16 @@
                 { transform: `translateX(${labelDx}px)` },
                 { transform: "none" },
               ],
-              { duration: moveDuration, easing: moveEasing },
+              { duration: moveDuration / 2, easing: "ease-out" },
             );
           }
-          fadeIn(item, before.opacity, fadeInDelay);
-          fadeIn(playcountOf(item), before.playcountOpacity, fadeInDelay);
+          fadeIn(item, before.opacity, delay);
+          const text = artists[index].playcount.toLocaleString();
+          if (playcountOf(item).textContent === text) {
+            fadeIn(playcountOf(item), before.playcountOpacity, delay);
+          } else {
+            swapPlaycount(item, text, delay, before.playcountOpacity);
+          }
         });
       }
 
