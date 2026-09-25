@@ -148,6 +148,23 @@
         );
       }
 
+      function countOf(item: Element) {
+        return item.querySelector(".artist-count")!;
+      }
+
+      function countText(artist: Artist) {
+        return `${artist.playcount.toLocaleString()} plays`;
+      }
+
+      function fadeIn(element: Element, from: number) {
+        if (from < 1) {
+          element.animate([{ opacity: from }, { opacity: 1 }], {
+            duration: fadeDuration,
+            easing: "ease",
+          });
+        }
+      }
+
       async function showArtists(artists: Artist[], currentRequest: number) {
         if (!list || !status) return;
         const existing = currentItems();
@@ -155,25 +172,36 @@
         const leaving = [...existing]
           .filter(([name]) => !nextNames.has(name))
           .map(([, item]) => item);
+        const changedCounts = artists.flatMap((artist) => {
+          const item = existing.get(artist.name);
+          return item && countOf(item).textContent !== countText(artist)
+            ? [countOf(item)]
+            : [];
+        });
 
-        if (!reducedMotion && leaving.length > 0) {
-          await fadeOut(leaving);
+        if (!reducedMotion && leaving.length + changedCounts.length > 0) {
+          await fadeOut([...leaving, ...changedCounts]);
           if (currentRequest !== requestId) return;
         }
 
-        const first = new Map<Element, { rect: DOMRect; opacity: number }>();
+        const first = new Map<
+          Element,
+          { rect: DOMRect; opacity: number; countOpacity: number }
+        >();
         existing.forEach((item) => {
           first.set(item, {
             rect: item.getBoundingClientRect(),
             opacity: Number(getComputedStyle(item).opacity),
+            countOpacity: Number(getComputedStyle(countOf(item)).opacity),
           });
-          item.getAnimations().forEach((animation) => animation.cancel());
+          item
+            .getAnimations({ subtree: true })
+            .forEach((animation) => animation.cancel());
         });
 
         const items = artists.map((artist) => {
           const item = existing.get(artist.name) ?? createItem(artist);
-          item.querySelector(".artist-count")!.textContent =
-            `${artist.playcount.toLocaleString()} plays`;
+          countOf(item).textContent = countText(artist);
           return item;
         });
         list.replaceChildren(...items);
@@ -204,12 +232,8 @@
               { duration: moveDuration, easing: moveEasing },
             );
           }
-          if (before.opacity < 1) {
-            item.animate([{ opacity: before.opacity }, { opacity: 1 }], {
-              duration: fadeDuration,
-              easing: "ease",
-            });
-          }
+          fadeIn(item, before.opacity);
+          fadeIn(countOf(item), before.countOpacity);
         });
       }
 
