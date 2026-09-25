@@ -367,6 +367,9 @@ const dropdowns = [
           }
         >();
         const startHeight = content?.getBoundingClientRect().height ?? 0;
+        if (content && !reducedMotion) {
+          content.style.height = `${startHeight}px`;
+        }
         content?.getAnimations().forEach((animation) => animation.cancel());
         existing.forEach((item) => {
           if (leaving.includes(item)) return;
@@ -406,15 +409,21 @@ const dropdowns = [
           return;
         }
 
-        const endHeight = content?.getBoundingClientRect().height ?? 0;
-        if (content && existing.size > 0 && startHeight !== endHeight) {
-          content.animate(
-            [
-              { height: `${startHeight}px`, overflow: "clip" },
-              { height: `${endHeight}px`, overflow: "clip" },
-            ],
-            { duration: moveDuration, easing: moveEasing },
+        if (content) {
+          const endHeight = Math.max(
+            list.getBoundingClientRect().height,
+            parseFloat(getComputedStyle(content).minHeight),
           );
+          if (existing.size > 0 && startHeight !== endHeight) {
+            content.animate(
+              [
+                { height: `${startHeight}px`, overflow: "clip" },
+                { height: `${endHeight}px`, overflow: "clip" },
+              ],
+              { duration: moveDuration, easing: moveEasing },
+            );
+          }
+          content.style.height = "";
         }
 
         const delays = cascadeDelays(
@@ -618,6 +627,7 @@ const dropdowns = [
   ol {
     position: relative;
     grid-area: 1 / 1;
+    align-self: start;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-content: start;
