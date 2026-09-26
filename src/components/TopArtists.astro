@@ -116,9 +116,9 @@ const dropdowns = [
         "(prefers-reduced-motion: reduce)",
       ).matches;
       const fadeDuration = 220;
-      const moveDuration = 520;
-      const moveEasing = "cubic-bezier(0.65, 0, 0.35, 1)";
-      const cascadeStep = moveDuration * 0.4;
+      const moveDuration = 800;
+      const moveEasing = "cubic-bezier(0.16, 1, 0.3, 1)";
+      const cascadeStep = 200;
       let requestId = 0;
       let period = "180";
       let count = 4;
@@ -286,8 +286,8 @@ const dropdowns = [
       const shownCounts = new WeakMap<Element, number>();
       const countFrames = new WeakMap<Element, number>();
 
-      function easeInOutCubic(t: number) {
-        return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+      function easeOutExpo(t: number) {
+        return t === 1 ? 1 : 1 - 2 ** (-10 * t);
       }
 
       function stopCount(item: Element) {
@@ -329,7 +329,7 @@ const dropdowns = [
           );
           setPlaycount(
             item,
-            Math.round(from + (target - from) * easeInOutCubic(progress)),
+            Math.round(from + (target - from) * easeOutExpo(progress)),
           );
           if (progress < 1) {
             countFrames.set(item, requestAnimationFrame(tick));
