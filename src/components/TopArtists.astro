@@ -95,6 +95,14 @@ const dropdowns = [
 
 <script>
   import { cascadeDelays } from "@/lib/cascade";
+  import {
+    cssEasing,
+    cubicBezier,
+    defaultEasing,
+    easingPresets,
+    isEasingName,
+    type EasingName,
+  } from "@/lib/easing";
 
   interface Artist {
     name: string;
@@ -116,9 +124,45 @@ const dropdowns = [
         "(prefers-reduced-motion: reduce)",
       ).matches;
       const fadeDuration = 220;
-      const moveDuration = 800;
-      const moveEasing = "cubic-bezier(0.16, 1, 0.3, 1)";
       const cascadeStep = 200;
+      const easeParam = new URLSearchParams(location.search).get("ease");
+      let moveDuration = 0;
+      let moveEasing = "";
+      let countEasing = (t: number) => t;
+
+      function useEasing(name: EasingName) {
+        const preset = easingPresets[name];
+        moveDuration = preset.duration;
+        moveEasing = cssEasing(preset.bezier);
+        countEasing = cubicBezier(preset.bezier);
+      }
+
+      useEasing(isEasingName(easeParam) ? easeParam : defaultEasing);
+      if (easeParam !== null) showEasingPicker(easeParam);
+
+      function showEasingPicker(selected: string) {
+        const picker = document.createElement("select");
+        picker.className = "easing-picker";
+        picker.setAttribute("aria-label", "Easing preset");
+        for (const [name, preset] of Object.entries(easingPresets)) {
+          picker.add(
+            new Option(
+              `${preset.label} · ${preset.duration}ms`,
+              name,
+              false,
+              name === (isEasingName(selected) ? selected : defaultEasing),
+            ),
+          );
+        }
+        picker.addEventListener("change", () => {
+          if (!isEasingName(picker.value)) return;
+          useEasing(picker.value);
+          const url = new URL(location.href);
+          url.searchParams.set("ease", picker.value);
+          history.replaceState(null, "", url);
+        });
+        document.body.appendChild(picker);
+      }
       let requestId = 0;
       let period = "180";
       let count = 4;
@@ -286,10 +330,6 @@ const dropdowns = [
       const shownCounts = new WeakMap<Element, number>();
       const countFrames = new WeakMap<Element, number>();
 
-      function easeOutExpo(t: number) {
-        return t === 1 ? 1 : 1 - 2 ** (-10 * t);
-      }
-
       function stopCount(item: Element) {
         const frame = countFrames.get(item);
         if (frame !== undefined) cancelAnimationFrame(frame);
@@ -329,7 +369,7 @@ const dropdowns = [
           );
           setPlaycount(
             item,
-            Math.round(from + (target - from) * easeOutExpo(progress)),
+            Math.round(from + (target - from) * countEasing(progress)),
           );
           if (progress < 1) {
             countFrames.set(item, requestAnimationFrame(tick));
@@ -545,6 +585,19 @@ const dropdowns = [
 </script>
 
 <style>
+  :global(.easing-picker) {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 10;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--fg-tertiary);
+    padding: 0.35rem 0.5rem;
+  }
+
   .top-artists {
     margin-top: 1.25rem;
   }
