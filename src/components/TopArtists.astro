@@ -99,9 +99,9 @@ const dropdowns = [
     cssEasing,
     cubicBezier,
     defaultEasing,
+    durationOptions,
     easingPresets,
     isEasingName,
-    type EasingName,
   } from "@/lib/easing";
 
   interface Artist {
@@ -125,42 +125,65 @@ const dropdowns = [
       ).matches;
       const fadeDuration = 220;
       const cascadeStep = 200;
-      const easeParam = new URLSearchParams(location.search).get("ease");
+      const params = new URLSearchParams(location.search);
+      const easeParam = params.get("ease");
+      let easingName = isEasingName(easeParam) ? easeParam : defaultEasing;
+      let durationOverride = Number(params.get("ms")) || null;
       let moveDuration = 0;
       let moveEasing = "";
       let countEasing = (t: number) => t;
 
-      function useEasing(name: EasingName) {
-        const preset = easingPresets[name];
-        moveDuration = preset.duration;
+      function applyEasing() {
+        const preset = easingPresets[easingName];
+        moveDuration = durationOverride ?? preset.duration;
         moveEasing = cssEasing(preset.bezier);
         countEasing = cubicBezier(preset.bezier);
       }
 
-      useEasing(isEasingName(easeParam) ? easeParam : defaultEasing);
-      if (easeParam !== null) showEasingPicker(easeParam);
+      applyEasing();
+      if (easeParam !== null) showEasingPicker();
 
-      function showEasingPicker(selected: string) {
-        const picker = document.createElement("select");
+      function syncUrl(key: string, value: string | null) {
+        const url = new URL(location.href);
+        if (value === null) url.searchParams.delete(key);
+        else url.searchParams.set(key, value);
+        history.replaceState(null, "", url);
+      }
+
+      function showEasingPicker() {
+        const picker = document.createElement("div");
         picker.className = "easing-picker";
-        picker.setAttribute("aria-label", "Easing preset");
+
+        const curve = document.createElement("select");
+        curve.setAttribute("aria-label", "Easing curve");
         for (const [name, preset] of Object.entries(easingPresets)) {
-          picker.add(
-            new Option(
-              `${preset.label} · ${preset.duration}ms`,
-              name,
-              false,
-              name === (isEasingName(selected) ? selected : defaultEasing),
-            ),
+          curve.add(new Option(preset.label, name, false, name === easingName));
+        }
+        curve.addEventListener("change", () => {
+          if (!isEasingName(curve.value)) return;
+          easingName = curve.value;
+          applyEasing();
+          syncUrl("ease", curve.value);
+        });
+
+        const duration = document.createElement("select");
+        duration.setAttribute("aria-label", "Duration");
+        duration.add(
+          new Option("preset duration", "", false, !durationOverride),
+        );
+        for (const ms of durationOptions) {
+          duration.add(
+            new Option(`${ms}ms`, String(ms), false, ms === durationOverride),
           );
         }
-        picker.addEventListener("change", () => {
-          if (!isEasingName(picker.value)) return;
-          useEasing(picker.value);
-          const url = new URL(location.href);
-          url.searchParams.set("ease", picker.value);
-          history.replaceState(null, "", url);
+        duration.addEventListener("change", () => {
+          durationOverride = Number(duration.value) || null;
+          applyEasing();
+          syncUrl("ms", duration.value || null);
         });
+
+        picker.appendChild(curve);
+        picker.appendChild(duration);
         document.body.appendChild(picker);
       }
       let requestId = 0;
@@ -590,6 +613,11 @@ const dropdowns = [
     right: 1rem;
     bottom: 1rem;
     z-index: 10;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  :global(.easing-picker select) {
     font: inherit;
     font-size: 0.8rem;
     color: var(--fg);

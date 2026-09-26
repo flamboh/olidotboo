@@ -6,40 +6,47 @@ export interface EasingPreset {
 
 export const easingPresets = {
   "in-out-cubic": {
-    label: "in-out cubic (old)",
+    label: "in-out cubic (original)",
     bezier: [0.65, 0, 0.35, 1],
     duration: 520,
   },
-  "out-cubic": {
-    label: "out cubic",
-    bezier: [0.33, 1, 0.68, 1],
-    duration: 650,
+  "in-out-sine": {
+    label: "in-out sine (gentler)",
+    bezier: [0.37, 0, 0.63, 1],
+    duration: 520,
   },
-  "out-quint": {
-    label: "out quint",
-    bezier: [0.22, 1, 0.36, 1],
-    duration: 750,
+  "in-out-quart": {
+    label: "in-out quart (punchier)",
+    bezier: [0.76, 0, 0.24, 1],
+    duration: 600,
+  },
+  "quick-in-long-out": {
+    label: "quick start, long settle",
+    bezier: [0.5, 0, 0.1, 1],
+    duration: 600,
+  },
+  standard: {
+    label: "material standard",
+    bezier: [0.4, 0, 0.2, 1],
+    duration: 520,
+  },
+  emphasized: {
+    label: "material emphasized",
+    bezier: [0.2, 0, 0, 1],
+    duration: 600,
   },
   "out-expo": {
-    label: "out expo",
+    label: "out expo (current)",
     bezier: [0.16, 1, 0.3, 1],
     duration: 800,
-  },
-  "out-circ": {
-    label: "out circ",
-    bezier: [0, 0.55, 0.45, 1],
-    duration: 750,
-  },
-  "out-back": {
-    label: "out back (overshoot)",
-    bezier: [0.34, 1.56, 0.64, 1],
-    duration: 700,
   },
 } satisfies Record<string, EasingPreset>;
 
 export type EasingName = keyof typeof easingPresets;
 
 export const defaultEasing: EasingName = "out-expo";
+
+export const durationOptions = [400, 520, 600, 700, 800] as const;
 
 export function isEasingName(value: string | null): value is EasingName {
   return value !== null && Object.hasOwn(easingPresets, value);

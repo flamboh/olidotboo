@@ -12,14 +12,10 @@ describe("cubicBezier", () => {
   });
 
   test("matches the curve it approximates", () => {
-    const quint = cubicBezier(easingPresets["out-quint"].bezier);
+    const quart = cubicBezier(easingPresets["in-out-quart"].bezier);
     for (const x of [0.1, 0.3, 0.5, 0.7, 0.9]) {
-      expect(quint(x)).toBeCloseTo(1 - (1 - x) ** 5, 1);
+      const exact = x < 0.5 ? 8 * x ** 4 : 1 - (-2 * x + 2) ** 4 / 2;
+      expect(quart(x)).toBeCloseTo(exact, 1);
     }
-  });
-
-  test("overshoots for out-back", () => {
-    const back = cubicBezier(easingPresets["out-back"].bezier);
-    expect(Math.max(...[0.6, 0.7, 0.8].map(back))).toBeGreaterThan(1);
   });
 });
