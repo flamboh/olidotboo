@@ -25,7 +25,7 @@ export const experience: Entry[] = [
   {
     title: "quackhacks",
     subtitle: "software engineer",
-    href: "https://2026.quackhacks.org/",
+    href: "https://quackhacks.org/",
     description: "bringing oregon hackathons to hundreds of attendees.",
   },
   {
