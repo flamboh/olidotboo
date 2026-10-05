@@ -4,28 +4,43 @@ export function cascadeDelays(
   step: number,
 ) {
   const delays = new Map<string, number>();
-  const visiting = new Set<string>();
 
-  function delayOf(name: string): number {
-    const known = delays.get(name);
-    if (known !== undefined) return known;
-
+  function occupantOf(name: string) {
     const occupant = before[after.indexOf(name)];
-    let delay = 0;
-    if (
-      occupant !== undefined &&
+    return occupant !== undefined &&
       occupant !== name &&
-      after.includes(occupant) &&
-      !visiting.has(occupant)
-    ) {
-      visiting.add(name);
-      delay = delayOf(occupant) + step;
-      visiting.delete(name);
-    }
-    delays.set(name, delay);
-    return delay;
+      after.includes(occupant)
+      ? occupant
+      : undefined;
   }
 
-  after.forEach(delayOf);
+  after.forEach((name) => {
+    const path: string[] = [];
+    let current: string | undefined = name;
+    while (
+      current !== undefined &&
+      !delays.has(current) &&
+      !path.includes(current)
+    ) {
+      path.push(current);
+      current = occupantOf(current);
+    }
+
+    let delay = -step;
+    if (current !== undefined && delays.has(current)) {
+      delay = delays.get(current)!;
+    } else if (current !== undefined) {
+      path.splice(path.indexOf(current)).forEach((member) => {
+        delays.set(member, 0);
+      });
+      delay = 0;
+    }
+
+    path.reverse().forEach((member) => {
+      delay += step;
+      delays.set(member, delay);
+    });
+  });
+
   return delays;
 }
