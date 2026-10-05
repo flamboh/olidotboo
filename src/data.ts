@@ -48,13 +48,13 @@ export const projects: Entry[] = [
     description: "processing and visualizing large-scale network telemetry.",
   },
   {
+    title: "album listening club",
+    href: "https://uoalbum.club",
+    description: "the hub for a uoregon club for social music discovery.",
+  },
+  {
     title: "the stoning",
     href: "https://thestoning.net",
     description: "music publication for album listening club.",
-  },
-  {
-    title: "pland",
-    href: "https://github.com/flamboh/pland",
-    description: "a rust cli that lets coding agents publish sites instantly.",
   },
 ];
