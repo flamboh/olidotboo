@@ -1,3 +1,8 @@
+import type { ImageMetadata } from "astro";
+import quackhacks from "@/assets/pretty/quackhacks.png";
+import t3CodeOg from "@/assets/pretty/t3-code-og.jpg";
+import uoalbum from "@/assets/pretty/uoalbum.png";
+
 export const email = "hi@oli.boo";
 
 export const socials = [
@@ -56,5 +61,33 @@ export const projects: Entry[] = [
     title: "the stoning",
     href: "https://thestoning.net",
     description: "music publication for album listening club.",
+  },
+];
+
+export interface PrettyThing {
+  title: string;
+  href: string;
+  image: ImageMetadata;
+  alt: string;
+}
+
+export const prettyThings: PrettyThing[] = [
+  {
+    title: "t3 code og image",
+    href: "https://t3.codes",
+    image: t3CodeOg,
+    alt: "t3 code social card: the open-source control plane for coding agents",
+  },
+  {
+    title: "quackhacks",
+    href: "https://quackhacks.org",
+    image: quackhacks,
+    alt: "quackhacks landing page with a pixel-art forest and a duck",
+  },
+  {
+    title: "album listening club",
+    href: "https://uoalbum.club",
+    image: uoalbum,
+    alt: "album listening club landing page with a marbled vinyl record",
   },
 ];
