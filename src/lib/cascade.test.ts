@@ -39,10 +39,48 @@ describe("cascadeDelays", () => {
     );
   });
 
-  test("breaks a swap so one artist leads the other", () => {
-    const delays = cascadeDelays(["a", "b", "c"], ["b", "a", "c"], 100);
+  test("moves every artist in a cycle together", () => {
+    expect(cascadeDelays(["a", "b", "c"], ["b", "a", "c"], 100)).toEqual(
+      new Map([
+        ["b", 0],
+        ["a", 0],
+        ["c", 0],
+      ]),
+    );
 
-    expect([...delays.values()].sort()).toEqual([0, 0, 100]);
-    expect(delays.get("c")).toBe(0);
+    const delays = cascadeDelays(
+      [
+        "Jane Remover",
+        "Lucy Bedroque",
+        "Charli xcx",
+        "Slayr",
+        "underscores",
+        "brakence",
+        "Tinashe",
+        "Funeral",
+      ],
+      [
+        "Lucy Bedroque",
+        "Tinashe",
+        "Charli xcx",
+        "Jane Remover",
+        "beabadoobee",
+        "brakence",
+        "Slayr",
+        "underscores",
+      ],
+      100,
+    );
+
+    expect(Object.fromEntries(delays)).toEqual({
+      "Lucy Bedroque": 0,
+      Tinashe: 0,
+      "Charli xcx": 0,
+      "Jane Remover": 0,
+      beabadoobee: 100,
+      brakence: 0,
+      Slayr: 0,
+      underscores: 0,
+    });
   });
 });
