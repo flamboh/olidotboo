@@ -5,7 +5,7 @@ import albumListeningClubWebm from "@/assets/design/album-listening-club.webm";
 import quackhacksMp4 from "@/assets/design/quackhacks.mp4";
 import quackhacks from "@/assets/design/quackhacks.png";
 import quackhacksWebm from "@/assets/design/quackhacks.webm";
-import t3CodeOg from "@/assets/design/t3-code-og.jpg";
+import t3CodeOg from "@/assets/design/t3-code-og.png";
 import theStoningMp4 from "@/assets/design/the-stoning.mp4";
 import theStoning from "@/assets/design/the-stoning.png";
 import theStoningWebm from "@/assets/design/the-stoning.webm";
@@ -76,7 +76,6 @@ export interface DesignWork {
   href: string;
   image: ImageMetadata;
   video?: { webm: string; mp4: string };
-  letterbox?: string;
   alt: string;
 }
 
@@ -85,7 +84,6 @@ export const design: DesignWork[] = [
     title: "t3 code og image",
     href: "https://t3.codes",
     image: t3CodeOg,
-    letterbox: "#0a090b",
     alt: "t3 code social card: the open-source control plane for coding agents, over the agent logos and the app",
   },
   {

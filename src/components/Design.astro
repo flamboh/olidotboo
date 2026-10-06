@@ -9,13 +9,7 @@ import { design } from "@/data";
     {
       design.map((work) => (
         <article class="design-card" data-design-card>
-          <button
-            class="design-media"
-            type="button"
-            aria-expanded="false"
-            style={work.letterbox && `--letterbox: ${work.letterbox}`}
-            data-letterbox={work.letterbox ? "" : undefined}
-          >
+          <button class="design-media" type="button" aria-expanded="false">
             <Image
               src={work.image}
               alt={work.alt}
@@ -207,7 +201,7 @@ import { design } from "@/data";
     width: 100%;
     overflow: hidden;
     aspect-ratio: 16 / 10;
-    background: var(--letterbox, var(--border));
+    background: var(--border);
     border: 1px solid var(--border);
     border-radius: 4px;
     cursor: zoom-in;
@@ -245,10 +239,6 @@ import { design } from "@/data";
     .design-media img[data-loaded] {
       opacity: 1;
     }
-  }
-
-  .design-media[data-letterbox] img {
-    object-fit: contain;
   }
 
   .design-media video {
