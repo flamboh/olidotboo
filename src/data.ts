@@ -13,10 +13,10 @@ import theStoningWebm from "@/assets/design/the-stoning.webm";
 export const email = "hi@oli.boo";
 
 export const socials = [
-  { label: "github", href: "https://github.com/flamboh" },
-  { label: "twitter", href: "https://x.com/flambohh" },
-  { label: "instagram", href: "https://instagram.com/flamb0h" },
-  { label: "linkedin", href: "https://linkedin.com/in/oliboo" },
+  { label: "GitHub", href: "https://github.com/flamboh" },
+  { label: "Twitter", href: "https://x.com/flambohh" },
+  { label: "Instagram", href: "https://instagram.com/flamb0h" },
+  { label: "LinkedIn", href: "https://linkedin.com/in/oliboo" },
 ];
 
 export interface Entry {
@@ -28,23 +28,23 @@ export interface Entry {
 
 export const experience: Entry[] = [
   {
-    title: "t3 code",
-    subtitle: "contributor",
+    title: "T3 Code",
+    subtitle: "Contributor",
     href: "https://github.com/pingdotgg/t3code",
     description:
-      "maximizing comfort for the best agentic development environment.",
+      "Maximizing comfort for the best agentic development environment.",
   },
   {
-    title: "quackhacks",
-    subtitle: "software engineer",
+    title: "QuackHacks",
+    subtitle: "Software Engineer",
     href: "https://quackhacks.org/",
-    description: "bringing oregon hackathons to hundreds of attendees.",
+    description: "Bringing Oregon hackathons to hundreds of attendees.",
   },
   {
-    title: "oregon networking research group",
-    subtitle: "undergraduate researcher",
+    title: "Oregon Networking Research Group",
+    subtitle: "Undergraduate Researcher",
     href: "https://onrg.gitlab.io/",
-    description: "researching large-scale network telemetry.",
+    description: "Researching large-scale network telemetry.",
   },
 ];
 
@@ -52,22 +52,22 @@ export const projects: Entry[] = [
   {
     title: "tagium",
     href: "https://tagium.app/",
-    description: "save tracks you love and update metadata all in the browser.",
+    description: "Save tracks you love and update metadata all in the browser.",
   },
   {
-    title: "atlantis",
+    title: "ATLANTIS",
     href: "https://atlantis-landing.oliver-boorstein.workers.dev/",
-    description: "processing and visualizing large-scale network telemetry.",
+    description: "Processing and visualizing large-scale network telemetry.",
   },
   {
-    title: "album listening club",
+    title: "Album Listening Club",
     href: "https://uoalbum.club",
-    description: "the hub for a uoregon club for social music discovery.",
+    description: "The hub for a UOregon club for social music discovery.",
   },
   {
-    title: "the stoning",
+    title: "The Stoning",
     href: "https://thestoning.net",
-    description: "music publication for album listening club.",
+    description: "Music publication for Album Listening Club.",
   },
 ];
 
@@ -81,33 +81,33 @@ export interface DesignWork {
 
 export const design: DesignWork[] = [
   {
-    title: "t3 code embed image",
+    title: "T3 Code Embed Image",
     href: "https://t3.codes",
     image: t3CodeOg,
-    description: "a custom open graph image contributed to t3 code.",
+    description: "A custom Open Graph image contributed to T3 Code.",
   },
   {
-    title: "album listening club",
+    title: "Album Listening Club",
     href: "https://uoalbum.club",
     image: albumListeningClub,
     video: { webm: albumListeningClubWebm, mp4: albumListeningClubMp4 },
     description:
-      "homepage for album listening club with a 3d vinyl matching the weekly album.",
+      "Homepage for Album Listening Club with a 3D vinyl matching the weekly album.",
   },
   {
-    title: "quackhacks",
+    title: "QuackHacks",
     href: "https://quackhacks.org",
     image: quackhacks,
     video: { webm: quackhacksWebm, mp4: quackhacksMp4 },
     description:
-      "landing page for quackhacks with a cute physics duck on the water.",
+      "Landing page for QuackHacks with a cute physics duck on the water.",
   },
   {
-    title: "the stoning",
+    title: "The Stoning",
     href: "https://thestoning.net",
     image: theStoning,
     video: { webm: theStoningWebm, mp4: theStoningMp4 },
     description:
-      "bold constructivist-inspired hero section showing off student's articles at the stoning.",
+      "Bold Constructivist-inspired hero section showing off student's articles at The Stoning.",
   },
 ];

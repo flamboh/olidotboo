@@ -7,8 +7,8 @@ import TopArtists from "@/components/TopArtists.astro";
 import { email, experience, projects, socials } from "@/data";
 
 const sections = [
-  { id: "experience", label: "what i do", entries: experience },
-  { id: "projects", label: "things i made", entries: projects },
+  { id: "experience", label: "What I do", entries: experience },
+  { id: "projects", label: "Things I made", entries: projects },
 ];
 ---
 
@@ -22,7 +22,7 @@ const sections = [
     <meta name="generator" content={Astro.generator} />
     <meta
       name="description"
-      content="oliver boorstein — researcher, music lover, cs + data science @ uoregon"
+      content="Oliver Boorstein — researcher, music lover, CS + data science @ UOregon"
     />
     <title>oliboo</title>
     <script is:inline>
@@ -52,11 +52,11 @@ const sections = [
       <header class="masthead">
         <div>
           <h1>
-            oliver boorstein <span class="pronouns">he/they</span>
+            Oliver Boorstein <span class="pronouns">he/they</span>
           </h1>
           <p class="tagline">
-            tuned in engineer<br />
-            cs + data science @ uoregon
+            Tuned in engineer<br />
+            CS + data science @ UOregon
           </p>
           <button
             class="contact-line"
@@ -64,11 +64,11 @@ const sections = [
             data-copy-email
             data-email={email}
           >
-            contact me: {email}
+            Contact me: {email}
           </button>
         </div>
-        <button type="button" data-theme-toggle aria-label="switch theme">
-          [dark]
+        <button type="button" data-theme-toggle aria-label="Switch theme">
+          [Dark]
         </button>
       </header>
 
@@ -110,7 +110,7 @@ const sections = [
       <Design />
 
       <section aria-labelledby="activity-label">
-        <h2 class="label" id="activity-label">streaks</h2>
+        <h2 class="label" id="activity-label">Streaks</h2>
         <GithubGraph />
         <LastfmHeatmap />
         <TopArtists />
@@ -139,9 +139,12 @@ const sections = [
 
       function syncToggle() {
         if (!toggle) return;
-        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        const next = root.dataset.theme === "dark" ? "Light" : "Dark";
         toggle.textContent = `[${next}]`;
-        toggle.setAttribute("aria-label", `switch to ${next} theme`);
+        toggle.setAttribute(
+          "aria-label",
+          `Switch to ${next.toLowerCase()} theme`,
+        );
       }
 
       const systemDark = matchMedia("(prefers-color-scheme: dark)");
@@ -172,9 +175,9 @@ const sections = [
         const address = copyButton.dataset.email ?? "";
         try {
           await navigator.clipboard.writeText(address);
-          copyButton.textContent = "copied!";
+          copyButton.textContent = "Copied!";
         } catch {
-          copyButton.textContent = "copy failed";
+          copyButton.textContent = "Copy failed";
         }
         setTimeout(() => (copyButton.textContent = copyLabel), 1600);
       });

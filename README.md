@@ -1,3 +1,3 @@
 # olidotboo
 
-my personal website. linked [here](https://oli.boo/).
+My personal website. Linked [here](https://oli.boo/).

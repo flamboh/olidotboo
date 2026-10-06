@@ -2,7 +2,7 @@
 const dropdowns = [
   {
     name: "count",
-    lead: "top",
+    lead: "Top",
     label: "Number of artists",
     selected: "4",
     options: [4, 8].map((count) => ({
@@ -89,7 +89,7 @@ const dropdowns = [
         ))
       }
     </ol>
-    <p class="artist-status" role="status" data-artist-status>loading…</p>
+    <p class="artist-status" role="status" data-artist-status>Loading…</p>
   </div>
 </div>
 
@@ -502,7 +502,7 @@ const dropdowns = [
         }
         list.replaceChildren();
         list.setAttribute("aria-busy", "false");
-        status.textContent = "top artists unavailable";
+        status.textContent = "Top artists unavailable";
         status.hidden = false;
         if (!reducedMotion) {
           status.animate([{ opacity: 0 }, { opacity: 1 }], {
