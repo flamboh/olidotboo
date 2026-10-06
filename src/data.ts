@@ -82,18 +82,18 @@ export interface DesignWork {
 
 export const design: DesignWork[] = [
   {
-    title: "the stoning",
-    href: "https://thestoning.net",
-    image: theStoning,
-    video: { webm: theStoningWebm, mp4: theStoningMp4 },
-    alt: "the stoning's red and black collage front page, scrolling down to page through the latest reviews",
-  },
-  {
     title: "t3 code og image",
     href: "https://t3.codes",
     image: t3CodeOg,
     letterbox: "#0a090b",
     alt: "t3 code social card: the open-source control plane for coding agents, over the agent logos and the app",
+  },
+  {
+    title: "album listening club",
+    href: "https://uoalbum.club",
+    image: albumListeningClub,
+    video: { webm: albumListeningClubWebm, mp4: albumListeningClubMp4 },
+    alt: "album listening club homepage with a marbled vinyl record spinning in 3d, scrolling down to this week's album",
   },
   {
     title: "quackhacks",
@@ -103,10 +103,10 @@ export const design: DesignWork[] = [
     alt: "quackhacks landing page with a shifting gradient wordmark and a pixel-art duck flung across the forest",
   },
   {
-    title: "album listening club",
-    href: "https://uoalbum.club",
-    image: albumListeningClub,
-    video: { webm: albumListeningClubWebm, mp4: albumListeningClubMp4 },
-    alt: "album listening club homepage with a marbled vinyl record spinning in 3d, scrolling down to this week's album",
+    title: "the stoning",
+    href: "https://thestoning.net",
+    image: theStoning,
+    video: { webm: theStoningWebm, mp4: theStoningMp4 },
+    alt: "the stoning's red and black collage front page, scrolling down to page through the latest reviews",
   },
 ];

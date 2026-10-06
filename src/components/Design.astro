@@ -67,8 +67,6 @@ import { design } from "@/data";
       return `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
     }
 
-    // Matches each image's sizes to its rendered width, so the browser
-    // fetches a sharper candidate once a card grows.
     function syncSizes() {
       cards.forEach((card) => {
         const width = Math.ceil(imageOf(card).getBoundingClientRect().width);
@@ -152,6 +150,12 @@ import { design } from "@/data";
       if (card) expandCard(card);
     });
 
+    root.querySelectorAll("img").forEach((image) => {
+      const reveal = () => (image.dataset.loaded = "");
+      if (image.complete && image.naturalWidth > 0) reveal();
+      else image.addEventListener("load", reveal, { once: true });
+    });
+
     if (!reducedMotion) {
       const videos = root.querySelectorAll("video");
       const observer = new IntersectionObserver((entries) => {
@@ -226,6 +230,21 @@ import { design } from "@/data";
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .design-media img {
+    color: transparent;
+  }
+
+  @media (scripting: enabled) {
+    .design-media img {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .design-media img[data-loaded] {
+      opacity: 1;
+    }
   }
 
   .design-media[data-letterbox] img {
