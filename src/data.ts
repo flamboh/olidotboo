@@ -76,35 +76,38 @@ export interface DesignWork {
   href: string;
   image: ImageMetadata;
   video?: { webm: string; mp4: string };
-  alt: string;
+  description: string;
 }
 
 export const design: DesignWork[] = [
   {
-    title: "t3 code og image",
+    title: "t3 code embed image",
     href: "https://t3.codes",
     image: t3CodeOg,
-    alt: "t3 code social card: the open-source control plane for coding agents, over the agent logos and the app",
+    description: "a custom open graph image contributed to t3 code.",
   },
   {
     title: "album listening club",
     href: "https://uoalbum.club",
     image: albumListeningClub,
     video: { webm: albumListeningClubWebm, mp4: albumListeningClubMp4 },
-    alt: "album listening club homepage with a marbled vinyl record spinning in 3d, scrolling down to this week's album",
+    description:
+      "homepage for album listening club with a 3d vinyl matching the weekly album.",
   },
   {
     title: "quackhacks",
     href: "https://quackhacks.org",
     image: quackhacks,
     video: { webm: quackhacksWebm, mp4: quackhacksMp4 },
-    alt: "quackhacks landing page with a shifting gradient wordmark and a pixel-art duck flung across the forest",
+    description:
+      "landing page for quackhacks with a cute physics duck on the water.",
   },
   {
     title: "the stoning",
     href: "https://thestoning.net",
     image: theStoning,
     video: { webm: theStoningWebm, mp4: theStoningMp4 },
-    alt: "the stoning's red and black collage front page, scrolling down to page through the latest reviews",
+    description:
+      "bold constructivist-inspired hero section showing off student's articles at the stoning.",
   },
 ];

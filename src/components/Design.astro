@@ -12,7 +12,7 @@ import { design } from "@/data";
           <button class="design-media" type="button" aria-expanded="false">
             <Image
               src={work.image}
-              alt={work.alt}
+              alt={work.description}
               widths={[480, 760, 1140, 1520]}
               sizes="(max-width: 640px) 100vw, 344px"
             />
@@ -29,7 +29,7 @@ import { design } from "@/data";
                 {work.title}
               </a>
             </h3>
-            <p class="design-alt">{work.alt}</p>
+            <p class="design-alt">{work.description}</p>
           </div>
         </article>
       ))
