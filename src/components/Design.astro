@@ -88,7 +88,8 @@ import { design } from "@/data";
       mutate();
       syncSizes();
       const endHeight =
-        grid!.getBoundingClientRect().bottom - root!.getBoundingClientRect().top;
+        grid!.getBoundingClientRect().bottom -
+        root!.getBoundingClientRect().top;
       if (!reducedMotion && startHeight !== endHeight) {
         root!.animate(
           [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
