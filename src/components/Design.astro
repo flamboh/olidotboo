@@ -47,6 +47,7 @@ import { design } from "@/data";
     ).matches;
     const moveDuration = 520;
     const moveEasing = "cubic-bezier(0.65, 0, 0.35, 1)";
+    let moveToken = 0;
 
     const mediaOf = (card: Element) =>
       card.querySelector<HTMLElement>(".design-media")!;
@@ -123,6 +124,16 @@ import { design } from "@/data";
             { duration: moveDuration, easing: moveEasing },
           );
         }
+      });
+
+      const token = ++moveToken;
+      root!.dataset.moving = "";
+      Promise.all(
+        root!
+          .getAnimations({ subtree: true })
+          .map((animation) => animation.finished.catch(() => {})),
+      ).then(() => {
+        if (token === moveToken) delete root!.dataset.moving;
       });
     }
 
@@ -210,17 +221,20 @@ import { design } from "@/data";
     background: var(--border);
     border: 1px solid var(--border);
     border-radius: 4px;
-    cursor: zoom-in;
-    transition: border-color var(--theme-fade) ease;
-  }
-
-  .design-media:hover {
-    outline: 2px solid var(--accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    transition:
+      border-color var(--theme-fade) ease,
+      outline-color 0.15s ease;
   }
 
-  [data-expanded] .design-media {
-    cursor: zoom-out;
+  .design-media:hover,
+  .design-media:focus-visible {
+    outline-color: var(--accent);
+  }
+
+  .design[data-moving] .design-media {
+    outline-color: transparent;
   }
 
   .design-media img,
