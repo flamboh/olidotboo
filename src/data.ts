@@ -1,7 +1,7 @@
 import type { ImageMetadata } from "astro";
-import quackhacks from "@/assets/pretty/quackhacks.png";
-import t3CodeOg from "@/assets/pretty/t3-code-og.jpg";
-import uoalbum from "@/assets/pretty/uoalbum.png";
+import quackhacks from "@/assets/design/quackhacks.png";
+import t3CodeOg from "@/assets/design/t3-code-og.jpg";
+import uoalbum from "@/assets/design/uoalbum.png";
 
 export const email = "hi@oli.boo";
 
@@ -64,14 +64,14 @@ export const projects: Entry[] = [
   },
 ];
 
-export interface PrettyThing {
+export interface DesignWork {
   title: string;
   href: string;
   image: ImageMetadata;
   alt: string;
 }
 
-export const prettyThings: PrettyThing[] = [
+export const design: DesignWork[] = [
   {
     title: "t3 code og image",
     href: "https://t3.codes",

@@ -1,0 +1,579 @@
+---
+import { Image } from "astro:assets";
+import { design } from "@/data";
+
+const variants = ["columns", "dialog", "feature", "strip", "expand"];
+---
+
+<section
+  class="design"
+  aria-labelledby="design-label"
+  data-design
+  data-variant="columns"
+>
+  <h2 class="label" id="design-label">design</h2>
+  <div class="design-feature" data-design-feature></div>
+  <div class="design-grid" data-design-grid>
+    {
+      design.map((work, index) => (
+        <article class="design-card" data-design-card data-index={index}>
+          <a
+            class="design-media"
+            href={work.href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src={work.image}
+              alt={work.alt}
+              widths={[480, 720, 1200, 1600, 2400]}
+              sizes="(max-width: 640px) 100vw, 344px"
+            />
+          </a>
+          <div class="design-text">
+            <h3>
+              <a href={work.href} target="_blank" rel="noopener noreferrer">
+                {work.title}
+              </a>
+            </h3>
+            <p class="design-alt">{work.alt}</p>
+            <button class="design-close" type="button" data-design-close>
+              [close]
+            </button>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <dialog class="design-dialog" data-design-dialog>
+    <figure>
+      <img data-dialog-image alt="" />
+      <figcaption data-dialog-caption>
+        <h3>
+          <a data-dialog-title target="_blank" rel="noopener noreferrer"></a>
+        </h3>
+        <p data-dialog-alt></p>
+      </figcaption>
+    </figure>
+  </dialog>
+</section>
+
+<nav class="design-switcher" aria-label="design variant" hidden>
+  <span>design:</span>
+  {
+    variants.map((variant) => (
+      <button type="button" data-variant-option={variant}>
+        {variant}
+      </button>
+    ))
+  }
+</nav>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-design]");
+  const grid = root?.querySelector<HTMLElement>("[data-design-grid]");
+  const featureSlot = root?.querySelector<HTMLElement>("[data-design-feature]");
+  const dialog = root?.querySelector<HTMLDialogElement>("[data-design-dialog]");
+  const switcher = document.querySelector<HTMLElement>(".design-switcher");
+
+  if (root && grid && featureSlot && dialog && switcher) {
+    const cards = [...root.querySelectorAll<HTMLElement>("[data-design-card]")];
+    const dialogImage = dialog.querySelector<HTMLImageElement>(
+      "[data-dialog-image]",
+    )!;
+    const dialogCaption = dialog.querySelector<HTMLElement>(
+      "[data-dialog-caption]",
+    )!;
+    const dialogTitle = dialog.querySelector<HTMLAnchorElement>(
+      "[data-dialog-title]",
+    )!;
+    const dialogAlt = dialog.querySelector<HTMLElement>("[data-dialog-alt]")!;
+    const reducedMotion = matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const moveDuration = 520;
+    const moveEasing = "cubic-bezier(0.65, 0, 0.35, 1)";
+    const dialogDuration = 420;
+    const dialogEasing = "cubic-bezier(0.22, 0.8, 0.25, 1)";
+    const variants = ["columns", "dialog", "feature", "strip", "expand"];
+    let dialogSource: HTMLElement | undefined;
+
+    const mediaOf = (card: Element) =>
+      card.querySelector<HTMLElement>(".design-media")!;
+    const textOf = (card: Element) =>
+      card.querySelector<HTMLElement>(".design-text")!;
+    const imageOf = (card: Element) => card.querySelector("img")!;
+
+    function transformBetween(from: DOMRect, to: DOMRect, scale: boolean) {
+      const dx = from.left - to.left;
+      const dy = from.top - to.top;
+      if (!scale) return `translate(${dx}px, ${dy}px)`;
+      return `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+    }
+
+    // Matches each image's sizes to its rendered width, so the browser
+    // fetches a sharper candidate once a card grows.
+    function syncSizes() {
+      cards.forEach((card) => {
+        const width = Math.ceil(imageOf(card).getBoundingClientRect().width);
+        if (width > 0) imageOf(card).sizes = `${width}px`;
+      });
+    }
+
+    function flip(mutate: () => void) {
+      const first = new Map(
+        cards.flatMap((card) => [
+          [mediaOf(card), mediaOf(card).getBoundingClientRect()] as const,
+          [textOf(card), textOf(card).getBoundingClientRect()] as const,
+        ]),
+      );
+      const startHeight = root!.getBoundingClientRect().height;
+      root!.getAnimations({ subtree: true }).forEach((animation) => {
+        if (!(animation.effect as KeyframeEffect).pseudoElement) {
+          animation.cancel();
+        }
+      });
+
+      mutate();
+      syncSizes();
+      if (reducedMotion) return;
+
+      const endHeight = root!.getBoundingClientRect().height;
+      if (startHeight !== endHeight) {
+        root!.animate(
+          [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
+          { duration: moveDuration, easing: moveEasing },
+        );
+      }
+
+      first.forEach((from, element) => {
+        const to = element.getBoundingClientRect();
+        if (to.width === 0 || from.width === 0) return;
+        const isMedia = element.classList.contains("design-media");
+        const resized = Math.abs(from.width - to.width) > 1;
+        const moved =
+          Math.abs(from.left - to.left) > 0.5 ||
+          Math.abs(from.top - to.top) > 0.5;
+        if (!moved && !resized) return;
+        if (isMedia) {
+          element.animate(
+            [
+              {
+                transformOrigin: "0 0",
+                transform: transformBetween(from, to, true),
+              },
+              { transformOrigin: "0 0", transform: "none" },
+            ],
+            { duration: moveDuration, easing: moveEasing },
+          );
+        } else if (resized) {
+          element.animate([{ opacity: 0 }, { opacity: 1 }], {
+            duration: moveDuration / 2,
+            delay: moveDuration / 2,
+            easing: "ease",
+            fill: "backwards",
+          });
+        } else {
+          element.animate(
+            [{ transform: transformBetween(from, to, false) }, {}],
+            { duration: moveDuration, easing: moveEasing },
+          );
+        }
+      });
+    }
+
+    function returnToGrid(card: HTMLElement) {
+      const index = Number(card.dataset.index);
+      const next = [...grid!.children].find(
+        (other) => Number((other as HTMLElement).dataset.index) > index,
+      );
+      grid!.insertBefore(card, next ?? null);
+    }
+
+    function resetLayout() {
+      const featured =
+        featureSlot!.querySelector<HTMLElement>("[data-design-card]");
+      if (featured) returnToGrid(featured);
+      cards.forEach((card) => card.removeAttribute("data-expanded"));
+    }
+
+    function featureCard(card: HTMLElement) {
+      const featured =
+        featureSlot!.querySelector<HTMLElement>("[data-design-card]");
+      flip(() => {
+        if (featured === card) {
+          returnToGrid(card);
+          return;
+        }
+        if (featured) grid!.insertBefore(featured, card);
+        featureSlot!.appendChild(card);
+      });
+    }
+
+    function expandCard(card: HTMLElement) {
+      const expand = !card.hasAttribute("data-expanded");
+      flip(() => {
+        cards.forEach((other) =>
+          other.toggleAttribute("data-expanded", other === card && expand),
+        );
+      });
+    }
+
+    function animateDialog(opening: boolean) {
+      const source = dialogSource ? imageOf(dialogSource) : undefined;
+      if (reducedMotion || !source) return Promise.resolve();
+      const from = source.getBoundingClientRect();
+      const to = dialogImage.getBoundingClientRect();
+      const options: KeyframeAnimationOptions = {
+        duration: dialogDuration,
+        easing: dialogEasing,
+        fill: "forwards",
+        direction: opening ? "normal" : "reverse",
+      };
+      dialog!.animate(
+        { opacity: [0, 1] },
+        { ...options, pseudoElement: "::backdrop" },
+      );
+      dialogCaption.animate({ opacity: [0, 1] }, options);
+      return dialogImage
+        .animate(
+          [
+            {
+              transformOrigin: "0 0",
+              transform: transformBetween(from, to, true),
+            },
+            { transformOrigin: "0 0", transform: "none" },
+          ],
+          options,
+        )
+        .finished.catch(() => {});
+    }
+
+    function openDialog(card: HTMLElement) {
+      const source = imageOf(card);
+      const link = card.querySelector<HTMLAnchorElement>("h3 a")!;
+      dialogSource = card;
+      dialogImage.removeAttribute("srcset");
+      dialogImage.src = source.currentSrc;
+      dialogImage.alt = source.alt;
+      dialogImage.setAttribute("width", source.getAttribute("width") ?? "");
+      dialogImage.setAttribute("height", source.getAttribute("height") ?? "");
+      dialogTitle.href = link.href;
+      dialogTitle.textContent = link.textContent;
+      dialogAlt.textContent = source.alt;
+      dialog!.showModal();
+      source.style.visibility = "hidden";
+      animateDialog(true);
+
+      const sharp = new Image();
+      sharp.sizes = `${Math.ceil(dialogImage.getBoundingClientRect().width)}px`;
+      sharp.srcset = source.srcset;
+      sharp
+        .decode()
+        .then(() => {
+          if (dialogSource !== card) return;
+          dialogImage.sizes = sharp.sizes;
+          dialogImage.srcset = sharp.srcset;
+        })
+        .catch(() => {});
+    }
+
+    async function closeDialog() {
+      if (!dialog!.open || !dialogSource) return;
+      const card = dialogSource;
+      await animateDialog(false);
+      dialog!.getAnimations().forEach((animation) => animation.cancel());
+      dialog!
+        .getAnimations({ subtree: true })
+        .forEach((animation) => animation.cancel());
+      dialog!.close();
+      imageOf(card).style.visibility = "";
+      dialogSource = undefined;
+    }
+
+    function setVariant(variant: string) {
+      flip(() => {
+        resetLayout();
+        root!.dataset.variant = variant;
+      });
+      switcher!
+        .querySelectorAll<HTMLButtonElement>("[data-variant-option]")
+        .forEach((option) =>
+          option.setAttribute(
+            "aria-pressed",
+            String(option.dataset.variantOption === variant),
+          ),
+        );
+      const url = new URL(location.href);
+      url.searchParams.set("design", variant);
+      history.replaceState(null, "", url);
+    }
+
+    root.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+      const card = event.target.closest<HTMLElement>("[data-design-card]");
+      if (!card) return;
+      if (event.target.closest("[data-design-close]")) {
+        featureCard(card);
+        return;
+      }
+      if (!event.target.closest(".design-media")) return;
+      const variant = root.dataset.variant;
+      if (variant === "dialog") openDialog(card);
+      else if (variant === "feature") featureCard(card);
+      else if (variant === "expand") expandCard(card);
+      else return;
+      event.preventDefault();
+    });
+
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeDialog();
+    });
+
+    dialog.addEventListener("click", (event) => {
+      if (event.target instanceof Element && event.target.closest("a")) return;
+      closeDialog();
+    });
+
+    switcher.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+      const variant = event.target.closest<HTMLElement>("[data-variant-option]")
+        ?.dataset.variantOption;
+      if (variant) setVariant(variant);
+    });
+
+    if (!["oli.boo", "www.oli.boo"].includes(location.hostname)) {
+      switcher.hidden = false;
+    }
+    const requested = new URL(location.href).searchParams.get("design");
+    root.dataset.variant = variants.includes(requested ?? "")
+      ? requested!
+      : "columns";
+    switcher
+      .querySelectorAll<HTMLButtonElement>("[data-variant-option]")
+      .forEach((option) =>
+        option.setAttribute(
+          "aria-pressed",
+          String(option.dataset.variantOption === root.dataset.variant),
+        ),
+      );
+    syncSizes();
+  }
+</script>
+
+<style>
+  .design {
+    margin-top: 2.5rem;
+  }
+
+  .design-feature {
+    display: none;
+    padding-top: 1.125rem;
+  }
+
+  .design[data-variant="feature"] .design-feature:has(.design-card) {
+    display: block;
+  }
+
+  .design-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem 1rem;
+    padding-top: 1.125rem;
+  }
+
+  .design[data-variant="columns"] .design-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem 2rem;
+  }
+
+  .design[data-variant="strip"] .design-grid {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .design[data-variant="strip"] .design-card {
+    flex: 0 0 calc((100% - 2rem) / 2.25);
+    scroll-snap-align: start;
+  }
+
+  .design[data-variant="expand"] .design-grid {
+    grid-auto-flow: dense;
+  }
+
+  .design-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+
+  .design-card[data-expanded] {
+    grid-column: 1 / -1;
+  }
+
+  .design-feature .design-card {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .design-media {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: border-color var(--theme-fade) ease;
+  }
+
+  .design-media:hover {
+    border-color: var(--accent);
+  }
+
+  .design[data-variant="dialog"] .design-media {
+    cursor: zoom-in;
+  }
+
+  .design[data-variant="expand"] [data-expanded] .design-media {
+    cursor: zoom-out;
+  }
+
+  .design-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 630;
+    object-fit: cover;
+  }
+
+  .design h3 {
+    font-family: var(--heading-font-family);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: normal;
+  }
+
+  .design h3 a {
+    text-decoration: none;
+  }
+
+  .design-alt,
+  .design-close {
+    display: none;
+  }
+
+  .design-alt,
+  .design-dialog p {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--fg-secondary);
+    text-wrap: pretty;
+  }
+
+  .design-feature .design-alt,
+  [data-expanded] .design-alt {
+    display: block;
+  }
+
+  .design-feature .design-close {
+    display: inline;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .design-dialog {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 1.5rem;
+    border: none;
+    background: transparent;
+    color: var(--fg);
+    overflow: hidden;
+  }
+
+  .design-dialog[open] {
+    display: grid;
+    place-items: center;
+  }
+
+  .design-dialog::backdrop {
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .design-dialog figure {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: min(1100px, 100%);
+    cursor: zoom-out;
+  }
+
+  .design-dialog img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100vh - 10rem);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  :global(html:has(.design-dialog[open])) {
+    overflow: hidden;
+  }
+
+  .design-switcher {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--fg-tertiary);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .design-switcher[hidden] {
+    display: none;
+  }
+
+  .design-switcher [aria-pressed="true"] {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (max-width: 640px) {
+    .design-grid,
+    .design[data-variant="columns"] .design-grid,
+    .design-feature .design-card {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .design-feature .design-card {
+      gap: 0.375rem;
+    }
+
+    .design[data-variant="strip"] .design-card {
+      flex-basis: 85%;
+    }
+  }
+</style>
