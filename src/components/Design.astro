@@ -41,6 +41,7 @@ import { design } from "@/data";
   const root = document.querySelector<HTMLElement>("[data-design]");
 
   if (root) {
+    const grid = root.querySelector<HTMLElement>(".design-grid");
     const cards = [...root.querySelectorAll<HTMLElement>("[data-design-card]")];
     const reducedMotion = matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -53,6 +54,8 @@ import { design } from "@/data";
       card.querySelector<HTMLElement>(".design-media")!;
     const textOf = (card: Element) =>
       card.querySelector<HTMLElement>(".design-text")!;
+    const descriptionOf = (card: Element) =>
+      card.querySelector<HTMLElement>(".design-alt")!;
     const imageOf = (card: Element) => card.querySelector("img")!;
 
     function transformBetween(from: DOMRect, to: DOMRect, scale: boolean) {
@@ -137,16 +140,84 @@ import { design } from "@/data";
       });
     }
 
+    function setExpanded(card: HTMLElement, expand: boolean) {
+      cards.forEach((other) => {
+        const expanded = other === card && expand;
+        other.toggleAttribute("data-raised", other === card);
+        other.toggleAttribute("data-expanded", expanded);
+        mediaOf(other).setAttribute("aria-expanded", String(expanded));
+      });
+    }
+
+    function descriptionState(card: HTMLElement) {
+      const description = descriptionOf(card);
+      const style = getComputedStyle(description);
+      if (style.display === "none") {
+        return { height: 0, marginTop: "0px", opacity: "0" };
+      }
+      return {
+        height: description.getBoundingClientRect().height,
+        marginTop: style.marginTop,
+        opacity: style.opacity,
+      };
+    }
+
+    function revealDescription(
+      card: HTMLElement,
+      show: boolean,
+      from: ReturnType<typeof descriptionState>,
+    ) {
+      const description = descriptionOf(card);
+      description.getAnimations().forEach((animation) => animation.cancel());
+      card.toggleAttribute("data-collapsing", !show);
+      const to = show
+        ? descriptionState(card)
+        : { height: 0, marginTop: "0px", opacity: "0" };
+      description
+        .animate(
+          [
+            {
+              height: `${from.height}px`,
+              marginTop: from.marginTop,
+              overflow: "clip",
+            },
+            {
+              height: `${to.height}px`,
+              marginTop: to.marginTop,
+              overflow: "clip",
+            },
+          ],
+          { duration: moveDuration, easing: moveEasing },
+        )
+        .finished.then(() => card.removeAttribute("data-collapsing"))
+        .catch(() => {});
+      description.animate(
+        [{ opacity: from.opacity }, { opacity: to.opacity }],
+        {
+          duration: moveDuration,
+          easing: "ease",
+        },
+      );
+    }
+
     function expandCard(card: HTMLElement) {
       const expand = !card.hasAttribute("data-expanded");
-      flip(() => {
-        cards.forEach((other) => {
-          const expanded = other === card && expand;
-          other.toggleAttribute("data-raised", other === card);
-          other.toggleAttribute("data-expanded", expanded);
-          mediaOf(other).setAttribute("aria-expanded", String(expanded));
-        });
-      });
+      const singleColumn =
+        getComputedStyle(grid!).gridTemplateColumns.split(" ").length === 1;
+      if (!singleColumn) {
+        flip(() => setExpanded(card, expand));
+        return;
+      }
+      const previous = cards.find(
+        (other) => other !== card && other.hasAttribute("data-expanded"),
+      );
+      const before = new Map(
+        cards.map((other) => [other, descriptionState(other)] as const),
+      );
+      setExpanded(card, expand);
+      if (reducedMotion) return;
+      revealDescription(card, expand, before.get(card)!);
+      if (previous) revealDescription(previous, false, before.get(previous)!);
     }
 
     root.addEventListener("click", (event) => {
@@ -233,6 +304,16 @@ import { design } from "@/data";
     outline-color: var(--accent);
   }
 
+  @media (hover: none) {
+    .design-media:hover {
+      outline-color: transparent;
+    }
+
+    .design-card[data-expanded] .design-media {
+      outline-color: var(--accent);
+    }
+  }
+
   .design[data-moving] .design-media {
     outline-color: transparent;
   }
@@ -290,7 +371,8 @@ import { design } from "@/data";
     text-wrap: pretty;
   }
 
-  [data-expanded] .design-alt {
+  [data-expanded] .design-alt,
+  [data-collapsing] .design-alt {
     display: block;
   }
 
