@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import Design from "@/components/Design.astro";
 import GithubGraph from "@/components/GithubGraph.astro";
 import LastfmHeatmap from "@/components/LastfmHeatmap.astro";
 import TopArtists from "@/components/TopArtists.astro";
@@ -105,6 +106,8 @@ const sections = [
           ))
         }
       </div>
+
+      <Design />
 
       <section aria-labelledby="activity-label">
         <h2 class="label" id="activity-label">streaks</h2>
@@ -240,6 +243,7 @@ const sections = [
 
       main > .masthead,
       main > .content-grid,
+      main > .design,
       main > section[aria-labelledby="activity-label"],
       main > footer {
         animation: page-enter 0.48s cubic-bezier(0.22, 0.8, 0.25, 1) both;
@@ -251,6 +255,10 @@ const sections = [
 
       main > .content-grid {
         animation-delay: 0.05s;
+      }
+
+      main > .design {
+        animation-delay: 0.075s;
       }
 
       main > section[aria-labelledby="activity-label"] {
@@ -450,6 +458,7 @@ const sections = [
       @media (prefers-reduced-motion: reduce) {
         main > .masthead,
         main > .content-grid,
+        main > .design,
         main > section[aria-labelledby="activity-label"],
         main > footer {
           animation: none;
