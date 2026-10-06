@@ -1,12 +1,14 @@
 import type { ImageMetadata } from "astro";
+import albumListeningClubMp4 from "@/assets/design/album-listening-club.mp4";
+import albumListeningClub from "@/assets/design/album-listening-club.png";
+import albumListeningClubWebm from "@/assets/design/album-listening-club.webm";
+import quackhacksMp4 from "@/assets/design/quackhacks.mp4";
 import quackhacks from "@/assets/design/quackhacks.png";
+import quackhacksWebm from "@/assets/design/quackhacks.webm";
 import t3CodeOg from "@/assets/design/t3-code-og.jpg";
-import uoalbum from "@/assets/design/uoalbum.png";
-import atlantisDummy from "@/assets/design/dummy/atlantis.png";
-import onrgDummy from "@/assets/design/dummy/onrg.png";
-import t3CodesDummy from "@/assets/design/dummy/t3-codes.png";
-import tagiumDummy from "@/assets/design/dummy/tagium.png";
-import theStoningDummy from "@/assets/design/dummy/the-stoning.png";
+import theStoningMp4 from "@/assets/design/the-stoning.mp4";
+import theStoning from "@/assets/design/the-stoning.png";
+import theStoningWebm from "@/assets/design/the-stoning.webm";
 
 export const email = "hi@oli.boo";
 
@@ -73,62 +75,38 @@ export interface DesignWork {
   title: string;
   href: string;
   image: ImageMetadata;
+  video?: { webm: string; mp4: string };
+  letterbox?: string;
   alt: string;
-  dummy?: boolean;
 }
 
 export const design: DesignWork[] = [
   {
+    title: "the stoning",
+    href: "https://thestoning.net",
+    image: theStoning,
+    video: { webm: theStoningWebm, mp4: theStoningMp4 },
+    alt: "the stoning's red and black collage front page, scrolling down to page through the latest reviews",
+  },
+  {
     title: "t3 code og image",
     href: "https://t3.codes",
     image: t3CodeOg,
-    alt: "t3 code social card: the open-source control plane for coding agents",
+    letterbox: "#0a090b",
+    alt: "t3 code social card: the open-source control plane for coding agents, over the agent logos and the app",
   },
   {
     title: "quackhacks",
     href: "https://quackhacks.org",
     image: quackhacks,
-    alt: "quackhacks landing page with a pixel-art forest and a duck",
+    video: { webm: quackhacksWebm, mp4: quackhacksMp4 },
+    alt: "quackhacks landing page with a shifting gradient wordmark and a pixel-art duck flung across the forest",
   },
   {
     title: "album listening club",
     href: "https://uoalbum.club",
-    image: uoalbum,
-    alt: "album listening club landing page with a marbled vinyl record",
-  },
-  {
-    title: "tagium",
-    href: "https://tagium.app",
-    image: tagiumDummy,
-    alt: "dummy: tagium upload screen",
-    dummy: true,
-  },
-  {
-    title: "the stoning",
-    href: "https://thestoning.net",
-    image: theStoningDummy,
-    alt: "dummy: the stoning front page",
-    dummy: true,
-  },
-  {
-    title: "atlantis",
-    href: "https://atlantis-landing.oliver-boorstein.workers.dev/",
-    image: atlantisDummy,
-    alt: "dummy: atlantis landing page",
-    dummy: true,
-  },
-  {
-    title: "onrg",
-    href: "https://onrg.gitlab.io/",
-    image: onrgDummy,
-    alt: "dummy: oregon networking research group homepage",
-    dummy: true,
-  },
-  {
-    title: "t3 code site",
-    href: "https://t3.codes",
-    image: t3CodesDummy,
-    alt: "dummy: t3 code homepage hero",
-    dummy: true,
+    image: albumListeningClub,
+    video: { webm: albumListeningClubWebm, mp4: albumListeningClubMp4 },
+    alt: "album listening club homepage with a marbled vinyl record spinning in 3d, scrolling down to this week's album",
   },
 ];
