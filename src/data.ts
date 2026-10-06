@@ -110,6 +110,6 @@ export const design: DesignWork[] = [
     image: theStoning,
     video: { webm: theStoningWebm, mp4: theStoningMp4 },
     description:
-      "Bold Constructivist-inspired hero section showing off student's articles at The Stoning.",
+      "Bold Constructivist-inspired hero section showing off students' articles at The Stoning.",
   },
 ];
