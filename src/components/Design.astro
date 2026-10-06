@@ -16,7 +16,13 @@ const variants = ["columns", "dialog", "feature", "strip", "expand"];
   <div class="design-grid" data-design-grid>
     {
       design.map((work, index) => (
-        <article class="design-card" data-design-card data-index={index}>
+        <article
+          class="design-card"
+          data-design-card
+          data-index={index}
+          data-dummy={work.dummy}
+          hidden={work.dummy}
+        >
           <a
             class="design-media"
             href={work.href}
@@ -68,6 +74,9 @@ const variants = ["columns", "dialog", "feature", "strip", "expand"];
       </button>
     ))
   }
+  <button type="button" data-dummies-toggle aria-pressed="false">
+    +dummies
+  </button>
 </nav>
 
 <script>
@@ -337,8 +346,31 @@ const variants = ["columns", "dialog", "feature", "strip", "expand"];
       closeDialog();
     });
 
+    const dummies = cards.filter((card) => card.hasAttribute("data-dummy"));
+    const dummiesToggle = switcher.querySelector<HTMLButtonElement>(
+      "[data-dummies-toggle]",
+    )!;
+
+    function setDummies(show: boolean, animate = true) {
+      const apply = () => {
+        if (!show) resetLayout();
+        dummies.forEach((card) => (card.hidden = !show));
+      };
+      if (animate) flip(apply);
+      else apply();
+      dummiesToggle.setAttribute("aria-pressed", String(show));
+      const url = new URL(location.href);
+      if (show) url.searchParams.set("dummies", "1");
+      else url.searchParams.delete("dummies");
+      history.replaceState(null, "", url);
+    }
+
     switcher.addEventListener("click", (event) => {
       if (!(event.target instanceof Element)) return;
+      if (event.target.closest("[data-dummies-toggle]")) {
+        setDummies(dummiesToggle.getAttribute("aria-pressed") !== "true");
+        return;
+      }
       const variant = event.target.closest<HTMLElement>("[data-variant-option]")
         ?.dataset.variantOption;
       if (variant) setVariant(variant);
@@ -359,6 +391,9 @@ const variants = ["columns", "dialog", "feature", "strip", "expand"];
           String(option.dataset.variantOption === root.dataset.variant),
         ),
       );
+    if (new URL(location.href).searchParams.has("dummies")) {
+      setDummies(true, false);
+    }
     syncSizes();
   }
 </script>
@@ -413,6 +448,10 @@ const variants = ["columns", "dialog", "feature", "strip", "expand"];
     flex-direction: column;
     gap: 0.375rem;
     min-width: 0;
+  }
+
+  .design-card[hidden] {
+    display: none;
   }
 
   .design-card[data-expanded] {
@@ -552,6 +591,11 @@ const variants = ["columns", "dialog", "feature", "strip", "expand"];
 
   .design-switcher[hidden] {
     display: none;
+  }
+
+  .design-switcher [data-dummies-toggle] {
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--border);
   }
 
   .design-switcher [aria-pressed="true"] {

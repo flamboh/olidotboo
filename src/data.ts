@@ -2,6 +2,11 @@ import type { ImageMetadata } from "astro";
 import quackhacks from "@/assets/design/quackhacks.png";
 import t3CodeOg from "@/assets/design/t3-code-og.jpg";
 import uoalbum from "@/assets/design/uoalbum.png";
+import atlantisDummy from "@/assets/design/dummy/atlantis.png";
+import onrgDummy from "@/assets/design/dummy/onrg.png";
+import t3CodesDummy from "@/assets/design/dummy/t3-codes.png";
+import tagiumDummy from "@/assets/design/dummy/tagium.png";
+import theStoningDummy from "@/assets/design/dummy/the-stoning.png";
 
 export const email = "hi@oli.boo";
 
@@ -69,6 +74,7 @@ export interface DesignWork {
   href: string;
   image: ImageMetadata;
   alt: string;
+  dummy?: boolean;
 }
 
 export const design: DesignWork[] = [
@@ -89,5 +95,40 @@ export const design: DesignWork[] = [
     href: "https://uoalbum.club",
     image: uoalbum,
     alt: "album listening club landing page with a marbled vinyl record",
+  },
+  {
+    title: "tagium",
+    href: "https://tagium.app",
+    image: tagiumDummy,
+    alt: "dummy: tagium upload screen",
+    dummy: true,
+  },
+  {
+    title: "the stoning",
+    href: "https://thestoning.net",
+    image: theStoningDummy,
+    alt: "dummy: the stoning front page",
+    dummy: true,
+  },
+  {
+    title: "atlantis",
+    href: "https://atlantis-landing.oliver-boorstein.workers.dev/",
+    image: atlantisDummy,
+    alt: "dummy: atlantis landing page",
+    dummy: true,
+  },
+  {
+    title: "onrg",
+    href: "https://onrg.gitlab.io/",
+    image: onrgDummy,
+    alt: "dummy: oregon networking research group homepage",
+    dummy: true,
+  },
+  {
+    title: "t3 code site",
+    href: "https://t3.codes",
+    image: t3CodesDummy,
+    alt: "dummy: t3 code homepage hero",
+    dummy: true,
   },
 ];
