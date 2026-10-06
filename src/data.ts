@@ -57,17 +57,19 @@ export const projects: Entry[] = [
   {
     title: "ATLANTIS",
     href: "https://atlantis-landing.oliver-boorstein.workers.dev/",
-    description: "Processing and visualizing large-scale network telemetry.",
+    description:
+      "Process and explore network telemetry, built under NSF REU support.",
   },
   {
     title: "Album Listening Club",
     href: "https://uoalbum.club",
-    description: "The hub for a UOregon club for social music discovery.",
+    description:
+      "Social music discovery and live events at the University of Oregon.",
   },
   {
     title: "The Stoning",
     href: "https://thestoning.net",
-    description: "Music publication for Album Listening Club.",
+    description: "Alternative music publication for Album Listening Club.",
   },
 ];
 
