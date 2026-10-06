@@ -83,18 +83,21 @@ import { design } from "@/data";
       root!
         .getAnimations({ subtree: true })
         .forEach((animation) => animation.cancel());
+      const startGridHeight = grid!.getBoundingClientRect().height;
+      root!.style.height = `${startHeight}px`;
 
       mutate();
       syncSizes();
-      if (reducedMotion) return;
-
-      const endHeight = root!.getBoundingClientRect().height;
-      if (startHeight !== endHeight) {
+      const endHeight =
+        startHeight + grid!.getBoundingClientRect().height - startGridHeight;
+      if (!reducedMotion && startHeight !== endHeight) {
         root!.animate(
           [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
           { duration: moveDuration, easing: moveEasing },
         );
       }
+      root!.style.removeProperty("height");
+      if (reducedMotion) return;
 
       first.forEach((from, element) => {
         const to = element.getBoundingClientRect();
