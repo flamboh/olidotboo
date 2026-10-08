@@ -10,21 +10,51 @@ const sections = [
   { id: "experience", label: "What I do", entries: experience },
   { id: "projects", label: "Things I made", entries: projects },
 ];
+
+const siteUrl = "https://oli.boo/";
+const title = "Oliver Boorstein";
+const description =
+  "Oliver Boorstein — researcher, music lover, computers @ University of Oregon";
+const ogImage = new URL("/og.png", siteUrl).href;
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: title,
+  url: siteUrl,
+  email: `mailto:${email}`,
+  affiliation: {
+    "@type": "CollegeOrUniversity",
+    name: "University of Oregon",
+  },
+  sameAs: socials.map((social) => social.href),
+};
+const personJsonLd = `<script type="application/ld+json">${JSON.stringify(person)}</script>`;
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={siteUrl} />
     <Font cssVariable="--font-chillax" preload={[{ weight: "700" }]} />
     <Font cssVariable="--font-azeret-mono" preload={[{ weight: "400" }]} />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <meta
-      name="description"
-      content="Oliver Boorstein — researcher, music lover, computers @ University of Oregon"
-    />
-    <title>oliboo</title>
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${title}, with BMO`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@flambohh" />
+    <Fragment set:html={personJsonLd} />
     <script is:inline>
       const stored = localStorage.getItem("theme");
       document.documentElement.dataset.theme =
@@ -122,7 +152,7 @@ const sections = [
             <a
               href={social.href}
               target={social.href.startsWith("/") ? undefined : "_blank"}
-              rel="noopener noreferrer"
+              rel="me noopener noreferrer"
             >
               {social.label}
             </a>
