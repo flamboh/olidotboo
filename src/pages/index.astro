@@ -14,7 +14,7 @@ const sections = [
 const siteUrl = "https://oli.boo/";
 const title = "Oliver Boorstein";
 const description =
-  "Oliver Boorstein — researcher, music lover, computers @ University of Oregon";
+  "Oliver Boorstein is a software engineer and CS student at the University of Oregon. T3 Code contributor, QuackHacks engineer, and network telemetry researcher.";
 const ogImage = new URL("/og.png", siteUrl).href;
 
 const person = {
@@ -97,9 +97,11 @@ const personJsonLd = `<script type="application/ld+json">${JSON.stringify(person
             Contact me: {email}
           </button>
         </div>
-        <button type="button" data-theme-toggle aria-label="Switch theme">
-          [Dark]
-        </button>
+        <div data-nosnippet>
+          <button type="button" data-theme-toggle aria-label="Switch theme">
+            [Dark]
+          </button>
+        </div>
       </header>
 
       <div class="content-grid">
