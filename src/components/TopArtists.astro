@@ -95,6 +95,14 @@ const dropdowns = [
 
 <script>
   import { cascadeDelays } from "@/lib/cascade";
+  import {
+    cssEasing,
+    cubicBezier,
+    defaultEasing,
+    durationOptions,
+    easingPresets,
+    isEasingName,
+  } from "@/lib/easing";
 
   interface Artist {
     name: string;
@@ -116,9 +124,68 @@ const dropdowns = [
         "(prefers-reduced-motion: reduce)",
       ).matches;
       const fadeDuration = 220;
-      const moveDuration = 520;
-      const moveEasing = "cubic-bezier(0.65, 0, 0.35, 1)";
-      const cascadeStep = moveDuration * 0.4;
+      const cascadeStep = 200;
+      const params = new URLSearchParams(location.search);
+      const easeParam = params.get("ease");
+      let easingName = isEasingName(easeParam) ? easeParam : defaultEasing;
+      let durationOverride = Number(params.get("ms")) || null;
+      let moveDuration = 0;
+      let moveEasing = "";
+      let countEasing = (t: number) => t;
+
+      function applyEasing() {
+        const preset = easingPresets[easingName];
+        moveDuration = durationOverride ?? preset.duration;
+        moveEasing = cssEasing(preset.bezier);
+        countEasing = cubicBezier(preset.bezier);
+      }
+
+      applyEasing();
+      if (easeParam !== null) showEasingPicker();
+
+      function syncUrl(key: string, value: string | null) {
+        const url = new URL(location.href);
+        if (value === null) url.searchParams.delete(key);
+        else url.searchParams.set(key, value);
+        history.replaceState(null, "", url);
+      }
+
+      function showEasingPicker() {
+        const picker = document.createElement("div");
+        picker.className = "easing-picker";
+
+        const curve = document.createElement("select");
+        curve.setAttribute("aria-label", "Easing curve");
+        for (const [name, preset] of Object.entries(easingPresets)) {
+          curve.add(new Option(preset.label, name, false, name === easingName));
+        }
+        curve.addEventListener("change", () => {
+          if (!isEasingName(curve.value)) return;
+          easingName = curve.value;
+          applyEasing();
+          syncUrl("ease", curve.value);
+        });
+
+        const duration = document.createElement("select");
+        duration.setAttribute("aria-label", "Duration");
+        duration.add(
+          new Option("preset duration", "", false, !durationOverride),
+        );
+        for (const ms of durationOptions) {
+          duration.add(
+            new Option(`${ms}ms`, String(ms), false, ms === durationOverride),
+          );
+        }
+        duration.addEventListener("change", () => {
+          durationOverride = Number(duration.value) || null;
+          applyEasing();
+          syncUrl("ms", duration.value || null);
+        });
+
+        picker.appendChild(curve);
+        picker.appendChild(duration);
+        document.body.appendChild(picker);
+      }
       let requestId = 0;
       let period = "180";
       let count = 4;
@@ -286,10 +353,6 @@ const dropdowns = [
       const shownCounts = new WeakMap<Element, number>();
       const countFrames = new WeakMap<Element, number>();
 
-      function easeInOutCubic(t: number) {
-        return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
-      }
-
       function stopCount(item: Element) {
         const frame = countFrames.get(item);
         if (frame !== undefined) cancelAnimationFrame(frame);
@@ -329,7 +392,7 @@ const dropdowns = [
           );
           setPlaycount(
             item,
-            Math.round(from + (target - from) * easeInOutCubic(progress)),
+            Math.round(from + (target - from) * countEasing(progress)),
           );
           if (progress < 1) {
             countFrames.set(item, requestAnimationFrame(tick));
@@ -545,6 +608,24 @@ const dropdowns = [
 </script>
 
 <style>
+  :global(.easing-picker) {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 10;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  :global(.easing-picker select) {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--fg-tertiary);
+    padding: 0.35rem 0.5rem;
+  }
+
   .top-artists {
     margin-top: 1.25rem;
   }
