@@ -2,6 +2,9 @@ import type { ImageMetadata } from "astro";
 import albumListeningClubMp4 from "@/assets/design/album-listening-club.mp4";
 import albumListeningClub from "@/assets/design/album-listening-club.png";
 import albumListeningClubWebm from "@/assets/design/album-listening-club.webm";
+import pleaseGodForbidMp4 from "@/assets/design/please-god-forbid.mp4";
+import pleaseGodForbid from "@/assets/design/please-god-forbid.png";
+import pleaseGodForbidWebm from "@/assets/design/please-god-forbid.webm";
 import quackhacksMp4 from "@/assets/design/quackhacks.mp4";
 import quackhacks from "@/assets/design/quackhacks.png";
 import quackhacksWebm from "@/assets/design/quackhacks.webm";
@@ -82,6 +85,14 @@ export interface DesignWork {
 }
 
 export const design: DesignWork[] = [
+  {
+    title: "please god forbid",
+    href: "https://pleasegodforbid.com",
+    image: pleaseGodForbid,
+    video: { webm: pleaseGodForbidWebm, mp4: pleaseGodForbidMp4 },
+    description:
+      "Interactive candlelit desk and puzzle book for Juno's album rollout, please god forbid.",
+  },
   {
     title: "T3 Code Embed Image",
     href: "https://t3.codes",
