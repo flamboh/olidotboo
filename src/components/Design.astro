@@ -1,38 +1,69 @@
 ---
 import { Image } from "astro:assets";
-import { design } from "@/data";
+import { design, type DesignWork } from "@/data";
+
+function splitDescription(work: DesignWork) {
+  const link = work.descriptionLink;
+  if (!link) return null;
+  const index = work.description.indexOf(link.text);
+  if (index === -1) return null;
+  return {
+    before: work.description.slice(0, index),
+    text: link.text,
+    href: link.href,
+    after: work.description.slice(index + link.text.length),
+  };
+}
 ---
 
 <section class="design" aria-labelledby="design-label" data-design>
   <h2 class="label" id="design-label">Design</h2>
   <div class="design-grid">
     {
-      design.map((work) => (
-        <article class="design-card" data-design-card>
-          <button class="design-media" type="button" aria-expanded="false">
-            <Image
-              src={work.image}
-              alt={work.description}
-              widths={[480, 760, 1140, 1520]}
-              sizes="(max-width: 640px) 100vw, 344px"
-            />
-            {work.video && (
-              <video muted loop playsinline preload="none" aria-hidden="true">
-                <source src={work.video.webm} type="video/webm" />
-                <source src={work.video.mp4} type="video/mp4" />
-              </video>
-            )}
-          </button>
-          <div class="design-text">
-            <h3>
-              <a href={work.href} target="_blank" rel="noopener noreferrer">
-                {work.title}
-              </a>
-            </h3>
-            <p class="design-alt">{work.description}</p>
-          </div>
-        </article>
-      ))
+      design.map((work) => {
+        const descriptionParts = splitDescription(work);
+        return (
+          <article class="design-card" data-design-card>
+            <button class="design-media" type="button" aria-expanded="false">
+              <Image
+                src={work.image}
+                alt={work.description}
+                widths={[480, 760, 1140, 1520]}
+                sizes="(max-width: 640px) 100vw, 344px"
+              />
+              {work.video && (
+                <video muted loop playsinline preload="none" aria-hidden="true">
+                  <source src={work.video.webm} type="video/webm" />
+                  <source src={work.video.mp4} type="video/mp4" />
+                </video>
+              )}
+            </button>
+            <div class="design-text">
+              <h3>
+                <a href={work.href} target="_blank" rel="noopener noreferrer">
+                  {work.title}
+                </a>
+              </h3>
+              <p class="design-alt">
+                {descriptionParts ? (
+                  <>
+                    {descriptionParts.before}
+                    <a
+                      href={descriptionParts.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      set:text={descriptionParts.text}
+                    />
+                    {descriptionParts.after}
+                  </>
+                ) : (
+                  work.description
+                )}
+              </p>
+            </div>
+          </article>
+        );
+      })
     }
   </div>
 </section>

@@ -82,6 +82,7 @@ export interface DesignWork {
   image: ImageMetadata;
   video?: { webm: string; mp4: string };
   description: string;
+  descriptionLink?: { text: string; href: string };
 }
 
 export const design: DesignWork[] = [
@@ -92,6 +93,10 @@ export const design: DesignWork[] = [
     video: { webm: pleaseGodForbidWebm, mp4: pleaseGodForbidMp4 },
     description:
       "Interactive puzzle concoction, designed and built just for Juno's album rollout.",
+    descriptionLink: {
+      text: "Juno's",
+      href: "https://www.instagram.com/chiefjuno/",
+    },
   },
   {
     title: "T3 Code Embed Image",
