@@ -405,6 +405,15 @@ function splitDescription(work: DesignWork) {
     text-wrap: pretty;
   }
 
+  .design-alt a {
+    color: inherit;
+  }
+
+  .design-alt a:hover {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+
   [data-expanded] .design-alt,
   [data-collapsing] .design-alt {
     display: block;
