@@ -91,7 +91,7 @@ export const design: DesignWork[] = [
     image: pleaseGodForbid,
     video: { webm: pleaseGodForbidWebm, mp4: pleaseGodForbidMp4 },
     description:
-      "Interactive candlelit desk and puzzle book for Juno's album rollout, please god forbid.",
+      "Interactive puzzle concoction, designed and built just for Juno's album rollout.",
   },
   {
     title: "T3 Code Embed Image",
